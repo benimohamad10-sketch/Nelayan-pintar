@@ -1,20 +1,31 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
 <title>Nelayan Pintar</title>
 
+<!-- Leaflet Map -->
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
 <style>
+
 body {
     font-family: Arial, sans-serif;
     background: #eaf7ff;
     margin: 0;
-    padding: 20px;
+    padding: 15px;
 }
 
 .app {
-    max-width: 500px;
+    max-width: 600px;
     margin: auto;
     background: white;
     padding: 20px;
@@ -27,47 +38,55 @@ h1 {
     color: #006994;
 }
 
-button {
-    width: 100%;
-    padding: 15px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 12px;
-    font-size: 17px;
-    font-weight: bold;
-    background: #0077b6;
-    color: white;
-}
-
 input {
     width: 100%;
     box-sizing: border-box;
     padding: 14px;
-    margin-top: 10px;
+    margin-top: 8px;
     border: 1px solid #ccc;
     border-radius: 10px;
     font-size: 16px;
 }
 
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    background: #0077b6;
+    color: white;
+}
+
 #status {
-    margin-top: 15px;
+    margin-top: 12px;
     padding: 12px;
     background: #f1f9fc;
     border-radius: 10px;
 }
 
-.titik {
+#map {
+    width: 100%;
+    height: 400px;
     margin-top: 15px;
-    padding: 15px;
+    border-radius: 15px;
+}
+
+.titik {
+    margin-top: 12px;
+    padding: 12px;
     background: #f5f5f5;
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
 .hapus {
     background: #d62828;
-    font-size: 14px;
 }
+
 </style>
+
 </head>
 
 <body>
@@ -77,164 +96,461 @@ input {
 <h1>🚤 NELAYAN PINTAR</h1>
 
 <p style="text-align:center">
-📍 Simpan lokasi memancing tanpa internet
+🗺️ Peta Lokasi Mancing
 </p>
 
 <input
-    type="text"
     id="namaLokasi"
+    type="text"
     placeholder="Contoh: Rumpon 1">
 
 <button onclick="ambilDanSimpan()">
-    🎣 SIMPAN LOKASI MANCING
+🎣 SIMPAN LOKASI MANCING
+</button>
+
+<button onclick="ambilPosisiSaya()">
+📍 POSISI SAYA
 </button>
 
 <div id="status">
-    Belum ada lokasi baru.
+Lokasi belum diambil.
 </div>
 
-<h2>📋 Lokasi Tersimpan</h2>
+<div id="map"></div>
+
+<h2>🎣 Lokasi Tersimpan</h2>
 
 <div id="daftarLokasi"></div>
 
 </div>
 
+
+<!-- Leaflet -->
+<script
+src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+
 <script>
 
+// =====================================
+// DATA LOKASI
+// =====================================
+
 let lokasiTersimpan =
-    JSON.parse(localStorage.getItem("lokasiNelayan")) || [];
+JSON.parse(
+    localStorage.getItem("lokasiNelayan")
+) || [];
+
+
+// =====================================
+// BUAT PETA
+// =====================================
+
+let map = L.map("map").setView(
+    [-2.5, 118],
+    5
+);
+
+
+// Peta OpenStreetMap
+
+L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap"
+    }
+).addTo(map);
+
+
+// Layer untuk marker
+
+let markerLayer =
+L.layerGroup().addTo(map);
+
+
+// Tampilkan titik lama
 
 tampilkanLokasi();
 
-function ambilDanSimpan() {
 
-    const nama = document.getElementById("namaLokasi").value.trim();
-    const status = document.getElementById("status");
+// =====================================
+// TAMPILKAN SEMUA TITIK
+// =====================================
 
-    if (!nama) {
-        alert("Masukkan nama lokasi terlebih dahulu.");
+function tampilkanLokasi() {
+
+    const daftar =
+        document.getElementById(
+            "daftarLokasi"
+        );
+
+    markerLayer.clearLayers();
+
+    daftar.innerHTML = "";
+
+
+    if (lokasiTersimpan.length === 0) {
+
+        daftar.innerHTML =
+        "<p>Belum ada lokasi.</p>";
+
         return;
     }
+
+
+    lokasiTersimpan.forEach(
+        function(lokasi, index) {
+
+
+        // =============================
+        // MARKER PETA
+        // =============================
+
+        const marker =
+        L.marker([
+            lokasi.latitude,
+            lokasi.longitude
+        ]).addTo(markerLayer);
+
+
+        marker.bindPopup(`
+            <b>🎣 ${lokasi.nama}</b>
+            <br><br>
+            Latitude:
+            ${lokasi.latitude}
+            <br>
+            Longitude:
+            ${lokasi.longitude}
+            <br><br>
+            Akurasi:
+            ± ${lokasi.akurasi} meter
+            <br><br>
+            ${lokasi.waktu}
+        `);
+
+
+        // =============================
+        // DAFTAR LOKASI
+        // =============================
+
+        daftar.innerHTML += `
+
+        <div class="titik">
+
+            <b>🎣 ${lokasi.nama}</b>
+
+            <br><br>
+
+            📍 ${lokasi.latitude},
+            ${lokasi.longitude}
+
+            <br>
+
+            🎯 Akurasi:
+            ± ${lokasi.akurasi} meter
+
+            <br>
+
+            🕐 ${lokasi.waktu}
+
+            <button
+            onclick="lihatTitik(${index})">
+
+            🗺️ LIHAT DI PETA
+
+            </button>
+
+            <button
+            class="hapus"
+            onclick="hapusLokasi(${index})">
+
+            🗑️ HAPUS
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+
+// =====================================
+// LIHAT TITIK DI PETA
+// =====================================
+
+function lihatTitik(index) {
+
+    const lokasi =
+        lokasiTersimpan[index];
+
+    map.setView(
+        [
+            lokasi.latitude,
+            lokasi.longitude
+        ],
+        16
+    );
+
+}
+
+
+// =====================================
+// AMBIL POSISI GPS
+// =====================================
+
+function ambilPosisiSaya() {
+
+    const status =
+        document.getElementById("status");
+
 
     if (!navigator.geolocation) {
+
         status.innerHTML =
-            "❌ GPS tidak tersedia di perangkat.";
+        "❌ GPS tidak tersedia.";
+
         return;
     }
 
+
     status.innerHTML =
-        "⏳ Sedang mencari posisi GPS...";
+    "⏳ Mencari posisi GPS...";
+
 
     navigator.geolocation.getCurrentPosition(
 
         function(position) {
 
-            const data = {
-                nama: nama,
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                akurasi: Math.round(position.coords.accuracy),
-                waktu: new Date().toLocaleString("id-ID")
-            };
+            const lat =
+                position.coords.latitude;
 
-            lokasiTersimpan.push(data);
+            const lon =
+                position.coords.longitude;
 
-            localStorage.setItem(
-                "lokasiNelayan",
-                JSON.stringify(lokasiTersimpan)
+            const akurasi =
+                Math.round(
+                    position.coords.accuracy
+                );
+
+
+            status.innerHTML = `
+
+            ✅ Posisi ditemukan
+
+            <br><br>
+
+            Latitude:
+            ${lat}
+
+            <br>
+
+            Longitude:
+            ${lon}
+
+            <br>
+
+            Akurasi:
+            ± ${akurasi} meter
+
+            `;
+
+
+            // Pindahkan peta
+
+            map.setView(
+                [lat, lon],
+                16
             );
 
-            status.innerHTML =
-                "✅ Lokasi berhasil disimpan.";
 
-            document.getElementById("namaLokasi").value = "";
+            // Marker posisi saya
 
-            tampilkanLokasi();
+            L.marker([lat, lon])
+            .addTo(markerLayer)
+            .bindPopup(
+                "📍 POSISI SAYA"
+            )
+            .openPopup();
+
         },
 
-        function(error) {
+
+        function() {
 
             status.innerHTML =
-                "❌ GPS gagal mendapatkan lokasi.<br>" +
-                "Pastikan izin lokasi Safari sudah diberikan.";
+            "❌ Tidak dapat mengambil GPS. " +
+            "Pastikan izin lokasi diberikan.";
+
         },
+
 
         {
             enableHighAccuracy: true,
             timeout: 15000,
             maximumAge: 0
         }
+
     );
+
 }
 
-function tampilkanLokasi() {
 
-    const daftar =
-        document.getElementById("daftarLokasi");
+// =====================================
+// SIMPAN LOKASI MANCING
+// =====================================
 
-    if (lokasiTersimpan.length === 0) {
+function ambilDanSimpan() {
 
-        daftar.innerHTML =
-            "<p>Belum ada lokasi tersimpan.</p>";
+    const nama =
+        document.getElementById(
+            "namaLokasi"
+        ).value.trim();
+
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    if (!nama) {
+
+        alert(
+            "Masukkan nama lokasi."
+        );
 
         return;
     }
 
-    daftar.innerHTML = "";
 
-    lokasiTersimpan.forEach(function(lokasi, index) {
+    if (!navigator.geolocation) {
 
-        daftar.innerHTML += `
+        status.innerHTML =
+        "❌ GPS tidak tersedia.";
 
-        <div class="titik">
+        return;
+    }
 
-            <strong>🎣 ${lokasi.nama}</strong>
 
-            <br><br>
+    status.innerHTML =
+    "⏳ Mengambil lokasi...";
 
-            📍 Latitude:<br>
-            ${lokasi.latitude}
 
-            <br><br>
+    navigator.geolocation.getCurrentPosition(
 
-            📍 Longitude:<br>
-            ${lokasi.longitude}
+        function(position) {
 
-            <br><br>
+            const data = {
 
-            🎯 Akurasi:
-            ± ${lokasi.akurasi} meter
+                nama: nama,
 
-            <br><br>
+                latitude:
+                    position.coords.latitude,
 
-            🕐 ${lokasi.waktu}
+                longitude:
+                    position.coords.longitude,
 
-            <button
-                class="hapus"
-                onclick="hapusLokasi(${index})">
+                akurasi:
+                    Math.round(
+                        position.coords.accuracy
+                    ),
 
-                🗑️ Hapus
+                waktu:
+                    new Date()
+                    .toLocaleString("id-ID")
+            };
 
-            </button>
 
-        </div>
-        `;
-    });
+            lokasiTersimpan.push(data);
+
+
+            localStorage.setItem(
+                "lokasiNelayan",
+                JSON.stringify(
+                    lokasiTersimpan
+                )
+            );
+
+
+            status.innerHTML =
+            "✅ Lokasi berhasil disimpan!";
+
+
+            document.getElementById(
+                "namaLokasi"
+            ).value = "";
+
+
+            tampilkanLokasi();
+
+
+            // Fokus ke titik baru
+
+            map.setView(
+                [
+                    data.latitude,
+                    data.longitude
+                ],
+                16
+            );
+
+        },
+
+
+        function() {
+
+            status.innerHTML =
+            "❌ GPS gagal mendapatkan lokasi.";
+
+        },
+
+
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        }
+
+    );
+
 }
+
+
+// =====================================
+// HAPUS LOKASI
+// =====================================
 
 function hapusLokasi(index) {
 
-    if (confirm("Hapus lokasi ini?")) {
+    if (
+        confirm(
+            "Hapus lokasi ini?"
+        )
+    ) {
 
-        lokasiTersimpan.splice(index, 1);
+        lokasiTersimpan.splice(
+            index,
+            1
+        );
+
 
         localStorage.setItem(
             "lokasiNelayan",
-            JSON.stringify(lokasiTersimpan)
+            JSON.stringify(
+                lokasiTersimpan
+            )
         );
 
+
         tampilkanLokasi();
+
     }
+
 }
 
 </script>
