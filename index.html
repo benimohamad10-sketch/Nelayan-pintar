@@ -1,112 +1,161 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nelayan Pintar</title>
 
-    <title>Nelayan Pintar</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #eaf7ff;
+    margin: 0;
+    padding: 20px;
+}
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #eaf7ff;
-            text-align: center;
-            margin: 0;
-            padding: 30px 15px;
-        }
+.app {
+    max-width: 500px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,.15);
+}
 
-        .app {
-            max-width: 450px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }
+h1 {
+    text-align: center;
+    color: #006994;
+}
 
-        h1 {
-            color: #006994;
-        }
+button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: bold;
+    background: #0077b6;
+    color: white;
+}
 
-        button {
-            width: 100%;
-            padding: 16px;
-            margin-top: 15px;
-            border: none;
-            border-radius: 12px;
-            background: #0077b6;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-        }
+input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 16px;
+}
 
-        .hasil {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f1f9fc;
-            border-radius: 12px;
-            text-align: left;
-        }
-    </style>
+#status {
+    margin-top: 15px;
+    padding: 12px;
+    background: #f1f9fc;
+    border-radius: 10px;
+}
+
+.titik {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 12px;
+}
+
+.hapus {
+    background: #d62828;
+    font-size: 14px;
+}
+</style>
 </head>
 
 <body>
 
 <div class="app">
 
-    <h1>🚤 NELAYAN PINTAR</h1>
+<h1>🚤 NELAYAN PINTAR</h1>
 
-    <p>Aplikasi bantuan nelayan</p>
+<p style="text-align:center">
+📍 Simpan lokasi memancing tanpa internet
+</p>
 
-    <button onclick="ambilLokasi()">
-        📍 LOKASI SAYA
-    </button>
+<input
+    type="text"
+    id="namaLokasi"
+    placeholder="Contoh: Rumpon 1">
 
-    <div class="hasil" id="hasil">
-        Lokasi belum diambil.
-    </div>
+<button onclick="ambilDanSimpan()">
+    🎣 SIMPAN LOKASI MANCING
+</button>
+
+<div id="status">
+    Belum ada lokasi baru.
+</div>
+
+<h2>📋 Lokasi Tersimpan</h2>
+
+<div id="daftarLokasi"></div>
 
 </div>
 
 <script>
 
-function ambilLokasi() {
+let lokasiTersimpan =
+    JSON.parse(localStorage.getItem("lokasiNelayan")) || [];
 
-    const hasil = document.getElementById("hasil");
+tampilkanLokasi();
 
-    if (!navigator.geolocation) {
-        hasil.innerHTML = "❌ GPS tidak didukung oleh perangkat.";
+function ambilDanSimpan() {
+
+    const nama = document.getElementById("namaLokasi").value.trim();
+    const status = document.getElementById("status");
+
+    if (!nama) {
+        alert("Masukkan nama lokasi terlebih dahulu.");
         return;
     }
 
-    hasil.innerHTML = "⏳ Mencari lokasi GPS...";
+    if (!navigator.geolocation) {
+        status.innerHTML =
+            "❌ GPS tidak tersedia di perangkat.";
+        return;
+    }
+
+    status.innerHTML =
+        "⏳ Sedang mencari posisi GPS...";
 
     navigator.geolocation.getCurrentPosition(
 
         function(position) {
 
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-            const akurasi = position.coords.accuracy;
+            const data = {
+                nama: nama,
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                akurasi: Math.round(position.coords.accuracy),
+                waktu: new Date().toLocaleString("id-ID")
+            };
 
-            hasil.innerHTML = `
-                <b>📍 Lokasi ditemukan!</b><br><br>
+            lokasiTersimpan.push(data);
 
-                Latitude:<br>
-                ${latitude}<br><br>
+            localStorage.setItem(
+                "lokasiNelayan",
+                JSON.stringify(lokasiTersimpan)
+            );
 
-                Longitude:<br>
-                ${longitude}<br><br>
+            status.innerHTML =
+                "✅ Lokasi berhasil disimpan.";
 
-                Akurasi GPS:<br>
-                ± ${Math.round(akurasi)} meter
-            `;
+            document.getElementById("namaLokasi").value = "";
+
+            tampilkanLokasi();
         },
 
         function(error) {
 
-            hasil.innerHTML =
-                "❌ Lokasi tidak dapat diambil.<br>" +
+            status.innerHTML =
+                "❌ GPS gagal mendapatkan lokasi.<br>" +
                 "Pastikan izin lokasi Safari sudah diberikan.";
         },
 
@@ -115,9 +164,77 @@ function ambilLokasi() {
             timeout: 15000,
             maximumAge: 0
         }
-
     );
+}
 
+function tampilkanLokasi() {
+
+    const daftar =
+        document.getElementById("daftarLokasi");
+
+    if (lokasiTersimpan.length === 0) {
+
+        daftar.innerHTML =
+            "<p>Belum ada lokasi tersimpan.</p>";
+
+        return;
+    }
+
+    daftar.innerHTML = "";
+
+    lokasiTersimpan.forEach(function(lokasi, index) {
+
+        daftar.innerHTML += `
+
+        <div class="titik">
+
+            <strong>🎣 ${lokasi.nama}</strong>
+
+            <br><br>
+
+            📍 Latitude:<br>
+            ${lokasi.latitude}
+
+            <br><br>
+
+            📍 Longitude:<br>
+            ${lokasi.longitude}
+
+            <br><br>
+
+            🎯 Akurasi:
+            ± ${lokasi.akurasi} meter
+
+            <br><br>
+
+            🕐 ${lokasi.waktu}
+
+            <button
+                class="hapus"
+                onclick="hapusLokasi(${index})">
+
+                🗑️ Hapus
+
+            </button>
+
+        </div>
+        `;
+    });
+}
+
+function hapusLokasi(index) {
+
+    if (confirm("Hapus lokasi ini?")) {
+
+        lokasiTersimpan.splice(index, 1);
+
+        localStorage.setItem(
+            "lokasiNelayan",
+            JSON.stringify(lokasiTersimpan)
+        );
+
+        tampilkanLokasi();
+    }
 }
 
 </script>
