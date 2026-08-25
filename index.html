@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Nelayan Pintar</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eaf7ff;
+            text-align: center;
+            margin: 0;
+            padding: 30px 15px;
+        }
+
+        .app {
+            max-width: 450px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        h1 {
+            color: #006994;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 12px;
+            background: #0077b6;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .hasil {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f1f9fc;
+            border-radius: 12px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <h1>🚤 NELAYAN PINTAR</h1>
+
+    <p>Aplikasi bantuan nelayan</p>
+
+    <button onclick="ambilLokasi()">
+        📍 LOKASI SAYA
+    </button>
+
+    <div class="hasil" id="hasil">
+        Lokasi belum diambil.
+    </div>
+
+</div>
+
+<script>
+
+function ambilLokasi() {
+
+    const hasil = document.getElementById("hasil");
+
+    if (!navigator.geolocation) {
+        hasil.innerHTML = "❌ GPS tidak didukung oleh perangkat.";
+        return;
+    }
+
+    hasil.innerHTML = "⏳ Mencari lokasi GPS...";
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const akurasi = position.coords.accuracy;
+
+            hasil.innerHTML = `
+                <b>📍 Lokasi ditemukan!</b><br><br>
+
+                Latitude:<br>
+                ${latitude}<br><br>
+
+                Longitude:<br>
+                ${longitude}<br><br>
+
+                Akurasi GPS:<br>
+                ± ${Math.round(akurasi)} meter
+            `;
+        },
+
+        function(error) {
+
+            hasil.innerHTML =
+                "❌ Lokasi tidak dapat diambil.<br>" +
+                "Pastikan izin lokasi Safari sudah diberikan.";
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        }
+
+    );
+
+}
+
+</script>
+
+</body>
+</html>
