@@ -3,51 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelayan Pintar V8.3 Lengkap</title>
+    <title>Nelayan Pintar V8.3</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        body { background: #f0f4f8; padding: 12px; color: #333; }
-        .card { background: white; border-radius: 12px; padding: 12px; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { font-size: 1.05rem; margin-bottom: 8px; color: #1e3c72; border-bottom: 2px solid #eee; padding-bottom: 4px; }
+        body { background: #eef2f5; padding: 12px; color: #333; max-width: 500px; margin: 0 auto; }
         
-        /* Switcher Mode */
+        /* Header Title */
+        .app-header { text-align: center; margin-bottom: 12px; }
+        .app-header h1 { color: #006699; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .app-header p { color: #666; font-size: 0.85rem; font-weight: bold; }
+
+        /* Mode Switcher */
         .mode-container { display: flex; gap: 8px; margin-bottom: 12px; }
-        .btn-mode { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: #e0e0e0; color: #555; text-align: center; }
-        .btn-mode.active-nelayan { background: #2a5298; color: white; }
+        .btn-mode { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: #dcdde1; color: #444; text-align: center; }
+        .btn-mode.active-nelayan { background: #006699; color: white; }
         .btn-mode.active-keluarga { background: #27ae60; color: white; }
-        
-        /* Grid Layout */
+
+        /* Cards */
+        .card { background: white; border-radius: 12px; padding: 12px; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h2 { font-size: 1.05rem; margin-bottom: 10px; color: #006699; display: flex; align-items: center; gap: 6px; }
+
+        /* Weather Card (Tampilan khas V8.2) */
+        .weather-card { background: linear-gradient(135deg, #0077b6, #0096c7); color: white; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+        .weather-card h2 { color: white; border: none; }
+        .weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+        .weather-box { background: rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 12px; text-align: center; backdrop-filter: blur(5px); }
+        .weather-icon { font-size: 1.8rem; margin-bottom: 4px; }
+        .weather-label { font-size: 0.75rem; opacity: 0.9; }
+        .weather-val { font-size: 1.1rem; font-weight: bold; margin-top: 2px; }
+
+        /* Compass Visual */
+        .compass-card { background: #1e272e; color: white; border-radius: 12px; padding: 12px; text-align: center; margin-bottom: 12px; }
+        .compass-disc { width: 80px; height: 80px; border: 4px solid #f1c40f; border-radius: 50%; margin: 8px auto; display: flex; align-items: center; justify-content: center; font-size: 2rem; transition: transform 0.2s ease; }
+
+        /* Dashboard Info */
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-        .info-box { background: #f8f9fa; border-radius: 8px; padding: 8px; border-left: 4px solid #2a5298; }
+        .info-box { background: #f8f9fa; border-radius: 8px; padding: 8px; border-left: 4px solid #006699; }
         .info-label { font-size: 0.65rem; color: #666; font-weight: bold; }
         .info-val { font-size: 0.85rem; font-weight: bold; margin-top: 2px; word-break: break-all; }
-        
-        /* Dynamic Compass Visual */
-        .compass-box { text-align: center; padding: 10px; background: #1a252f; color: white; border-radius: 10px; margin-bottom: 12px; }
-        .compass-arrow { font-size: 2.2rem; display: inline-block; transition: transform 0.2s ease; margin: 5px 0; }
-        .compass-val { font-size: 1.3rem; font-weight: bold; color: #f1c40f; }
 
-        /* General Buttons */
-        .btn { width: 100%; padding: 10px; border: none; border-radius: 8px; font-weight: bold; color: white; cursor: pointer; margin-top: 6px; font-size: 0.85rem; }
-        .btn-blue { background: #2a5298; }
+        /* Buttons */
+        .btn { width: 100%; padding: 11px; border: none; border-radius: 8px; font-weight: bold; color: white; cursor: pointer; margin-top: 6px; font-size: 0.85rem; }
+        .btn-blue { background: #0077b6; }
         .btn-green { background: #27ae60; }
-        .btn-red { background: #e74c3c; }
         .btn-orange { background: #e67e22; }
-        .btn-dark { background: #34495e; }
+        .btn-red { background: #e74c3c; }
+        .btn-dark { background: #2c3e50; }
         .btn-sm { padding: 4px 8px; font-size: 0.75rem; width: auto; margin-top: 0; }
 
-        /* Map */
-        #map { height: 260px; width: 100%; border-radius: 8px; margin-top: 5px; }
-        
-        /* Lists */
+        /* Map & List */
+        #map { height: 250px; width: 100%; border-radius: 8px; margin-top: 5px; }
+        input[type="text"] { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 6px; margin-top: 5px; font-size: 0.85rem; }
         ul { list-style: none; padding: 0; margin-top: 5px; }
-        li { background: #f8f9fa; padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; }
-        
-        /* Inputs */
-        input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; margin-top: 5px; font-size: 0.85rem; }
+        li { background: #f8f9fa; padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
 
         .status-badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
         .status-online { background: #d4edda; color: #155724; }
@@ -80,25 +91,59 @@
 </head>
 <body>
 
+    <div class="app-header">
+        <h1>🚤 NELAYAN PINTAR V8.3</h1>
+        <p>🧭 NAVIGASI LAUT & CUACA REALTIME</p>
+    </div>
+
     <!-- Mode Selector -->
     <div class="mode-container">
         <button id="btnNelayan" class="btn-mode active-nelayan" onclick="switchMode('nelayan')">🚤 Mode Nelayan<br><small>(Android Adik)</small></button>
         <button id="btnKeluarga" class="btn-mode" onclick="switchMode('keluarga')">🏠 Mode Keluarga<br><small>(iPhone Bapak)</small></button>
     </div>
 
-    <!-- TAMPILAN MODE NELAYAN -->
+    <!-- MODE NELAYAN -->
     <div id="viewNelayan">
-        <!-- Kompas Visual + Panah -->
-        <div class="compass-box">
-            <div style="font-size: 0.75rem; color: #aaa;">KOMPAS & NAVIGASI PANAH</div>
-            <div id="compassArrow" class="compass-arrow">⬆️</div>
-            <div id="headingVal" class="compass-val">0° U</div>
-            <div id="targetNavInfo" style="font-size:0.75rem; margin-top:4px; color:#2ecc71;">Navigasi: -</div>
+        
+        <!-- INFORMASI CUACA & LAUT (Sesuai Gambar V8.2) -->
+        <div class="weather-card">
+            <h2>🌤️ INFORMASI CUACA & LAUT</h2>
+            <div class="weather-grid">
+                <div class="weather-box">
+                    <div id="weatherIcon" class="weather-icon">🌧️</div>
+                    <div id="weatherDesc" class="weather-label">Cuaca</div>
+                    <div id="weatherTemp" class="weather-val">-- °C</div>
+                </div>
+                <div class="weather-box">
+                    <div class="weather-icon">🌊</div>
+                    <div class="weather-label">Tinggi Gelombang</div>
+                    <div id="waveHeight" class="weather-val">0.5 m</div>
+                </div>
+                <div class="weather-box">
+                    <div class="weather-icon">💨</div>
+                    <div class="weather-label">Kecepatan Angin</div>
+                    <div id="windSpeed" class="weather-val">-- km/h</div>
+                </div>
+                <div class="weather-box">
+                    <div class="weather-icon">🧭</div>
+                    <div class="weather-label">Arah Angin</div>
+                    <div id="windDir" class="weather-val">--</div>
+                </div>
+            </div>
+            <button class="btn btn-blue" style="margin-top:10px; background: rgba(255,255,255,0.25);" onclick="cekCuacaLocation()">🔄 CEK CUACA POSISI SAYA</button>
         </div>
 
-        <!-- Dashboard GPS Nelayan -->
+        <!-- KOMPAS VISUAL SENSOR HP -->
+        <div class="compass-card">
+            <div style="font-size: 0.75rem; color: #ccc;">KOMPAS HP & PANAH NAVIGASI</div>
+            <div id="compassArrow" class="compass-disc">⬆️</div>
+            <div id="headingVal" style="font-size: 1.2rem; font-weight: bold; color: #f1c40f;">0° U</div>
+            <div id="targetNavInfo" style="font-size: 0.75rem; color: #2ecc71; margin-top: 4px;">Navigasi: -</div>
+        </div>
+
+        <!-- POSISI GPS NELAYAN -->
         <div class="card">
-            <h2>🚤 Posisi Perahu & Navigasi</h2>
+            <h2>⚓ Titik Berangkat & GPS</h2>
             <div class="info-grid">
                 <div class="info-box">
                     <div class="info-label">LATITUDE</div>
@@ -115,37 +160,37 @@
                     <div id="jarakAwal" class="info-val">0 km</div>
                 </div>
                 <div class="info-box">
-                    <div class="info-label">WAKTU GPS</div>
+                    <div class="info-label">WAKTU UPDATE</div>
                     <div id="nelayanTime" class="info-val">-</div>
                 </div>
             </div>
 
-            <button class="btn btn-blue" onclick="kirimLokasiRealtime()">📡 Kirim Update Lokasi ke Rumah</button>
-            <button class="btn btn-dark" onclick="setTitikAwal()">⚓ Simpan Titik Berangkat</button>
-            <button class="btn btn-orange" onclick="simpanSpotIkan()">🐟 Simpan Spot Mancing</button>
-            <button class="btn btn-red" onclick="kirimSOS()">🚨 DARURAT / SOS</button>
+            <button class="btn btn-orange" onclick="setTitikAwal()">⚓ SIMPAN TITIK BERANGKAT</button>
+            <button class="btn btn-blue" onclick="kirimLokasiRealtime()">📡 KIRIM LOKASI KE RUMAH (FIREBASE)</button>
+            <button class="btn btn-green" onclick="simpanSpotIkan()">🐟 SIMPAN SPOT MANCING</button>
+            <button class="btn btn-red" onclick="kirimSOS()">🚨 KANTONG DARURAT (SOS)</button>
         </div>
 
-        <!-- Input Koordinat Manual / WhatsApp -->
+        <!-- INPUT KOORDINAT WA -->
         <div class="card">
-            <h2>📍 Terima Koordinat (WA / Manual)</h2>
+            <h2>📍 Tempel Koordinat (WA / Manual)</h2>
             <input type="text" id="inputWaCoords" placeholder="Contoh: -6.12345, 106.78901">
-            <button class="btn btn-green" onclick="tujuKoordinatWA()">🎯 Tuju Koordinat Ini</button>
+            <button class="btn btn-dark" onclick="tujuKoordinatWA()">🎯 Tuju Koordinat Ini</button>
         </div>
 
-        <!-- Daftar Spot Ikan Tersimpan + Fitur Hapus -->
+        <!-- DAFTAR SPOT MANCING -->
         <div class="card">
-            <h2>🐟 Daftar Tempat Mancing</h2>
+            <h2>🐟 Daftar Tempat Mancing Tersimpan</h2>
             <ul id="listSpot">
                 <li><span>Belum ada spot tersimpan</span></li>
             </ul>
         </div>
     </div>
 
-    <!-- TAMPILAN MODE KELUARGA -->
+    <!-- MODE KELUARGA -->
     <div id="viewKeluarga" style="display:none;">
         <div class="card">
-            <h2>🏠 Pantau Perahu Nelayan Realtime</h2>
+            <h2>🏠 Pantau Perahu Realtime (iPhone Bapak)</h2>
             <div style="margin-bottom: 8px;">
                 Status Koneksi: <span id="statusBadge" class="status-badge status-online">Menghubungkan...</span>
             </div>
@@ -155,17 +200,17 @@
                     <div id="keluargaCoords" class="info-val">Memuat data...</div>
                 </div>
                 <div class="info-box">
-                    <div class="info-label">UPDATE WAKTU</div>
+                    <div class="info-label">WAKTU TERAKHIR</div>
                     <div id="keluargaTime" class="info-val">-</div>
                 </div>
             </div>
-            <a id="btnWA" href="#" target="_blank" class="btn btn-green" style="display:block; text-align:center; text-decoration:none;">💬 Bagikan / Kirim WA</a>
+            <a id="btnWA" href="#" target="_blank" class="btn btn-green" style="display:block; text-align:center; text-decoration:none;">💬 Buka di Google Maps / WA</a>
         </div>
     </div>
 
-    <!-- Peta Navigasi Bersama -->
+    <!-- PETA NAVIGASI -->
     <div class="card">
-        <h2>🗺️ Peta Navigasi</h2>
+        <h2>🗺️ Peta Navigasi Laut</h2>
         <div id="map"></div>
     </div>
 
@@ -183,10 +228,7 @@
 
         function initMap() {
             map = L.map('map').setView([-6.200000, 106.816666], 12);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
             marker = L.marker([-6.200000, 106.816666]).addTo(map);
             tampilkanSpotTersimpan();
         }
@@ -195,7 +237,6 @@
             currentMode = mode;
             document.getElementById('btnNelayan').className = mode === 'nelayan' ? 'btn-mode active-nelayan' : 'btn-mode';
             document.getElementById('btnKeluarga').className = mode === 'keluarga' ? 'btn-mode active-keluarga' : 'btn-mode';
-            
             document.getElementById('viewNelayan').style.display = mode === 'nelayan' ? 'block' : 'none';
             document.getElementById('viewKeluarga').style.display = mode === 'keluarga' ? 'block' : 'none';
 
@@ -204,7 +245,7 @@
             }
         }
 
-        // GPS Tracker
+        // GPS Tracking
         function updateGPS() {
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(function(position) {
@@ -235,7 +276,29 @@
             }
         }
 
-        // Sensor Kompas HP & Panah Navigasi
+        // API Fitur Cuaca (Open-Meteo)
+        function cekCuacaLocation() {
+            if (!currentLat || !currentLng) return alert("Tunggu lokasi GPS terdeteksi...");
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLng}&current_weather=true`;
+            
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    const cw = data.current_weather;
+                    document.getElementById('weatherTemp').innerText = cw.temperature + " °C";
+                    document.getElementById('windSpeed').innerText = cw.windspeed + " km/h";
+                    document.getElementById('windDir').innerText = getArahAngin(cw.winddirection);
+                    alert("✅ Informasi cuaca berhasil diperbarui!");
+                })
+                .catch(err => alert("Gagal mengambil data cuaca: " + err.message));
+        }
+
+        function getArahAngin(deg) {
+            const dirs = ['Utara', 'Timur Laut', 'Timur', 'Tenggara', 'Selatan', 'Barat Daya', 'Barat', 'Barat Laut'];
+            return dirs[Math.round(deg / 45) % 8];
+        }
+
+        // Kompas HP
         if (window.DeviceOrientationEvent) {
             window.addEventListener('deviceorientation', function(e) {
                 if (e.alpha !== null) {
@@ -254,26 +317,24 @@
                 arrowEl.style.transform = `rotate(${relAngle}deg)`;
                 
                 const d = hitungJarak(currentLat, currentLng, targetLat, targetLng);
-                document.getElementById('targetNavInfo').innerText = `Menuju Target: ${d.toFixed(2)} km (${Math.round(bearing)}°)`;
+                document.getElementById('targetNavInfo').innerText = `Tujuan: ${d.toFixed(2)} km (${Math.round(bearing)}°)`;
             } else {
                 arrowEl.style.transform = `rotate(${-heading}deg)`;
             }
         }
 
-        // Simpan Titik Awal
         function setTitikAwal() {
-            if(!currentLat) return alert("Tunggu GPS terdeteksi...");
+            if(!currentLat) return alert("GPS belum aktif...");
             startLat = currentLat;
             startLng = currentLng;
             if (startMarker) map.removeLayer(startMarker);
             startMarker = L.marker([startLat, startLng]).addTo(map).bindPopup("⚓ Titik Berangkat").openPopup();
-            alert("⚓ Titik Berangkat disimpan!");
+            alert("⚓ Titik Berangkat tersimpan!");
         }
 
-        // Simpan Tempat Mancing / Spot Ikan
         function simpanSpotIkan() {
-            if(!currentLat) return alert("Tunggu GPS terdeteksi...");
-            const namaSpot = prompt("Masukkan nama spot mancing:", "Spot " + (spotList.length + 1));
+            if(!currentLat) return alert("GPS belum aktif...");
+            const namaSpot = prompt("Nama tempat mancing:", "Spot " + (spotList.length + 1));
             if (namaSpot) {
                 const spot = { id: Date.now(), nama: namaSpot, lat: currentLat, lng: currentLng };
                 spotList.push(spot);
@@ -282,7 +343,6 @@
             }
         }
 
-        // Hapus Tempat Mancing
         function hapusSpot(id) {
             if (confirm("Hapus tempat mancing ini?")) {
                 spotList = spotList.filter(s => s.id !== id);
@@ -291,7 +351,6 @@
             }
         }
 
-        // Tuju Spot Terpilih
         function tujuSpot(lat, lng, nama) {
             targetLat = lat;
             targetLng = lng;
@@ -299,14 +358,12 @@
             targetMarker = L.marker([targetLat, targetLng]).addTo(map).bindPopup("🎯 " + nama).openPopup();
             map.panTo([targetLat, targetLng]);
             updateNavigasiPanah();
-            alert("🎯 Navigasi diarahkan ke: " + nama);
+            alert("🎯 Mengarah ke: " + nama);
         }
 
-        // Tampilkan Daftar & Marker Spot Mancing
         function tampilkanSpotTersimpan() {
             const ul = document.getElementById('listSpot');
             ul.innerHTML = "";
-            
             spotMarkers.forEach(m => map.removeLayer(m));
             spotMarkers = [];
 
@@ -334,20 +391,18 @@
             });
         }
 
-        // Input Koordinat WA / Manual
         function tujuKoordinatWA() {
             const text = document.getElementById('inputWaCoords').value;
             const match = text.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
             if (match) {
                 targetLat = parseFloat(match[1]);
                 targetLng = parseFloat(match[2]);
-                tujuSpot(targetLat, targetLng, "Koordinat WA/Manual");
+                tujuSpot(targetLat, targetLng, "Koordinat Manual");
             } else {
-                alert("Format koordinat salah. Contoh yang benar: -6.12345, 106.78901");
+                alert("Format koordinat salah! Contoh: -6.12345, 106.78901");
             }
         }
 
-        // Matematika Navigasi (Haversine & Bearing)
         function hitungJarak(lat1, lon1, lat2, lon2) {
             const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -365,14 +420,14 @@
             return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
         }
 
-        // Firebase Sync Functions
+        // Synchronize Firebase
         function kirimLokasiRealtime() {
             if (!currentLat || !currentLng) return alert("GPS belum terdeteksi.");
             const data = { lat: currentLat, lng: currentLng, waktu: new Date().toLocaleTimeString('id-ID'), sos: false };
             if (window.db) {
                 window.dbSet(window.dbRef(window.db, 'posisi_nelayan'), data)
-                    .then(() => alert("✅ Posisi dikirim ke Mode Keluarga!"))
-                    .catch((e) => alert("Gagal kirim: " + e.message));
+                    .then(() => alert("✅ Posisi berhasil dikirim ke Mode Keluarga!"))
+                    .catch((e) => alert("Gagal kirim data: " + e.message));
             }
         }
 
@@ -381,8 +436,8 @@
             const data = { lat: currentLat, lng: currentLng, waktu: new Date().toLocaleTimeString('id-ID'), sos: true };
             if (window.db) {
                 window.dbSet(window.dbRef(window.db, 'posisi_nelayan'), data)
-                    .then(() => alert("🚨 SINYAL DARURAT TERKIRIM!"))
-                    .catch((e) => alert("Gagal SOS: " + e.message));
+                    .then(() => alert("🚨 SINYAL SOS DARURAT TERKIRIM!"))
+                    .catch((e) => alert("Gagal kirim SOS: " + e.message));
             }
         }
 
@@ -406,7 +461,7 @@
                         marker.setLatLng([data.lat, data.lng]);
                         map.panTo([data.lat, data.lng]);
 
-                        const waMsg = `https://wa.me/?text=Posisi%20Perahu%20Nelayan:%20https://maps.google.com/?q=${data.lat},${data.lng}`;
+                        const waMsg = `https://maps.google.com/?q=${data.lat},${data.lng}`;
                         document.getElementById('btnWA').href = waMsg;
                     }
                 });
