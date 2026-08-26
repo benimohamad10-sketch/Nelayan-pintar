@@ -71,6 +71,24 @@
         const firebaseConfig = {
             apiKey: "AIzaSyBnbwH-Dc6X6_51w55TQ95FlD",
             authDomain: "nelayan-pintar-481c4.firebaseapp.com",
+            <// Fungsi untuk menghitung estimasi jumlah ikan berdasarkan koordinat/lokasi
+function hitungEstimasiIkan(lat, lng) {
+  // Simulasi kalkulasi sederhana berdasarkan koordinat
+  const acak = Math.abs(Math.sin(lat + lng));
+  const estimasiEkor = Math.floor(acak * 15) + 1; // Menghasilkan 1 - 15 ekor
+  
+  let potensi = "Sangat Baik";
+  if (estimasiEkor < 5) {
+    potensi = "Kurang";
+  } else if (estimasiEkor < 10) {
+    potensi = "Sedang";
+  }
+  
+  return {
+    jumlah: estimasiEkor,
+    status: potensi
+  };
+}>
             projectId: "nelayan-pintar-481c4",
             storageBucket: "nelayan-pintar-481c4.appspot.com",
             messagingSenderId: "984230095089",
