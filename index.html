@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelayan Pintar V8.5</title>
+    <title>Nelayan Pintar V8.6</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -35,7 +35,7 @@
         .weather-box { background: rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 10px; text-align: center; backdrop-filter: blur(5px); }
         .weather-icon { font-size: 1.6rem; margin-bottom: 4px; }
         .weather-label { font-size: 0.75rem; opacity: 0.9; }
-        .weather-val { font-size: 1.05rem; font-weight: bold; margin-top: 2px; }
+        .weather-val { font-size: 1rem; font-weight: bold; margin-top: 2px; }
 
         /* Compass Card */
         .compass-card { background: #1e272e; color: white; border-radius: 12px; padding: 12px; text-align: center; margin-bottom: 12px; }
@@ -60,7 +60,6 @@
         ul { list-style: none; padding: 0; margin-top: 5px; }
         li { background: #f8f9fa; padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
 
-        /* Custom Emoji Map Markers */
         .emoji-icon { font-size: 26px; text-align: center; line-height: 30px; }
     </style>
 
@@ -90,7 +89,7 @@
 <body>
 
     <div class="app-header">
-        <h1>🚤 NELAYAN PINTAR V8.5</h1>
+        <h1>🚤 NELAYAN PINTAR V8.6</h1>
         <p>🧭 NAVIGASI LAUT & CUACA REALTIME</p>
     </div>
 
@@ -108,7 +107,7 @@
             <h2>🌤️ CUACA POSISI PERAHU SAYA</h2>
             <div class="weather-grid">
                 <div class="weather-box">
-                    <div id="weatherIcon" class="weather-icon">🌧️</div>
+                    <div id="weatherIcon" class="weather-icon">☁️</div>
                     <div id="weatherDesc" class="weather-label">Cuaca Saat Ini</div>
                     <div id="weatherTemp" class="weather-val">-- °C</div>
                 </div>
@@ -214,7 +213,7 @@
         </div>
     </div>
 
-    <!-- PETA NAVIGASI DENGAN GARIS PUTUS-PUTUS & IKON PERAHU -->
+    <!-- PETA NAVIGASI -->
     <div class="card">
         <h2>🗺️ Peta Navigasi Laut & Garis Tujuan</h2>
         <div id="map"></div>
@@ -230,12 +229,10 @@
         
         let map, boatMarker, startMarker, targetMarker;
         let polylineGarisTujuan = null;
-        let polylineGarisBerangkat = null;
         let spotMarkers = [];
         let heading = 0;
         let spotList = JSON.parse(localStorage.getItem('spotIkan')) || [];
 
-        // Custom Markers (Perahu, Berangkat, Tujuan)
         const boatIcon = L.divIcon({ html: '🚤', className: 'emoji-icon', iconSize: [30, 30] });
         const startIcon = L.divIcon({ html: '⚓', className: 'emoji-icon', iconSize: [30, 30] });
         const targetIcon = L.divIcon({ html: '🎯', className: 'emoji-icon', iconSize: [30, 30] });
@@ -259,32 +256,26 @@
             }
         }
 
-        // GPS Realtime Update & Garis Putus-putus
         function updateGPS() {
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(function(position) {
                     currentLat = position.coords.latitude;
                     currentLng = position.coords.longitude;
-                    const timeStr = new Date().toLocaleTimeString('id-ID');
 
                     document.getElementById('nelayanLat').innerText = currentLat.toFixed(6);
                     document.getElementById('nelayanLng').innerText = currentLng.toFixed(6);
 
-                    // Update Posisi Ikon Perahu di Peta
                     boatMarker.setLatLng([currentLat, currentLng]);
 
-                    // Update Garis dan Jarak Berangkat
                     if (startLat && startLng) {
                         const distStart = hitungJarak(startLat, startLng, currentLat, currentLng);
                         document.getElementById('jarakAwal').innerText = distStart.toFixed(2) + " km";
                     }
 
-                    // Update Garis Putus-Putus Navigasi & Jarak Ke Tujuan
                     if (targetLat && targetLng) {
                         const distTarget = hitungJarak(currentLat, currentLng, targetLat, targetLng);
                         document.getElementById('jarakKeTujuan').innerText = distTarget.toFixed(2) + " km";
 
-                        // Gambar Garis Putus-Putus Merah Ke Tujuan
                         if (polylineGarisTujuan) map.removeLayer(polylineGarisTujuan);
                         polylineGarisTujuan = L.polyline([
                             [currentLat, currentLng],
@@ -303,7 +294,6 @@
             }
         }
 
-        // Simpan & Tandai Titik Berangkat
         function setTitikAwal() {
             if(!currentLat) return alert("GPS belum aktif...");
             startLat = currentLat;
@@ -314,16 +304,13 @@
             alert("⚓ Titik Berangkat Berhasil Disimpan di Peta!");
         }
 
-        // Tuju Koordinat + Cek Cuaca Tujuan
         function tujuSpot(lat, lng, nama) {
             targetLat = lat;
             targetLng = lng;
 
-            // 1. Pasang Ikon Target di Peta
             if (targetMarker) map.removeLayer(targetMarker);
             targetMarker = L.marker([targetLat, targetLng], { icon: targetIcon }).addTo(map).bindPopup("🎯 Tujuan: " + nama).openPopup();
 
-            // 2. Gambar Garis Putus-Putus di Peta
             if (currentLat && currentLng) {
                 if (polylineGarisTujuan) map.removeLayer(polylineGarisTujuan);
                 polylineGarisTujuan = L.polyline([
@@ -335,7 +322,6 @@
                 document.getElementById('jarakKeTujuan').innerText = dist.toFixed(2) + " km";
             }
 
-            // 3. Ambil Perkiraan Cuaca Di Lokasi Tujuan
             cekCuacaTujuan(lat, lng);
 
             map.panTo([targetLat, targetLng]);
@@ -343,7 +329,38 @@
             alert("🎯 Menuju ke: " + nama + "\nGaris navigasi merah & perkiraan cuaca tujuan aktif!");
         }
 
-        // API Cek Cuaca Di Titik Tujuan
+        // --- FUNGSI CUACA DINAMIS & AKURAT ---
+        function parseWeatherCode(code) {
+            if (code === 0) return { desc: "Cerah", icon: "☀️" };
+            if (code >= 1 && code <= 3) return { desc: "Cerah Berawan", icon: "⛅" };
+            if (code === 45 || code === 48) return { desc: "Berkabut", icon: "🌫️" };
+            if (code >= 51 && code <= 67) return { desc: "Hujan Ringan/Gerimis", icon: "🌧️" };
+            if (code >= 71 && code <= 77) return { desc: "Dingin Ekstrem", icon: "❄️" };
+            if (code >= 80 && code <= 82) return { desc: "Hujan Lebat", icon: "🌧️" };
+            if (code >= 95 && code <= 99) return { desc: "Badai / Petir", icon: "⛈️" };
+            return { desc: "Berawan", icon: "☁️" };
+        }
+
+        function cekCuacaLocation() {
+            if (!currentLat || !currentLng) return alert("Tunggu posisi GPS...");
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLng}&current_weather=true`;
+            
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    const cw = data.current_weather;
+                    const weatherInfo = parseWeatherCode(cw.weathercode);
+                    const windKts = (cw.windspeed * 0.539957).toFixed(1);
+
+                    document.getElementById('weatherIcon').innerText = weatherInfo.icon;
+                    document.getElementById('weatherDesc').innerText = weatherInfo.desc;
+                    document.getElementById('weatherTemp').innerText = cw.temperature + " °C";
+                    document.getElementById('windSpeed').innerText = `${cw.windspeed} km/h (${windKts} kts)`;
+                    alert("✅ Informasi cuaca posisi perahu diperbarui!");
+                })
+                .catch(err => console.log("Gagal muat cuaca lokasi: " + err.message));
+        }
+
         function cekCuacaTujuan(lat, lng) {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`;
             
@@ -351,14 +368,18 @@
                 .then(res => res.json())
                 .then(data => {
                     const cw = data.current_weather;
+                    const weatherInfo = parseWeatherCode(cw.weathercode);
+                    const windKts = (cw.windspeed * 0.539957).toFixed(1);
+
                     document.getElementById('targetWeatherBox').style.display = 'block';
+                    document.getElementById('targetWeatherIcon').innerText = weatherInfo.icon;
+                    document.getElementById('targetWeatherDesc').innerText = weatherInfo.desc;
                     document.getElementById('targetWeatherTemp').innerText = cw.temperature + " °C";
-                    document.getElementById('targetWindSpeed').innerText = cw.windspeed + " km/h";
+                    document.getElementById('targetWindSpeed').innerText = `${cw.windspeed} km/h (${windKts} kts)`;
                 })
                 .catch(err => console.log("Gagal muat cuaca tujuan: " + err.message));
         }
 
-        // Input Koordinat manual / WA
         function tujuKoordinatWA() {
             const text = document.getElementById('inputWaCoords').value;
             if(!text) return alert("Tempelkan teks koordinat dulu Pak!");
@@ -373,7 +394,6 @@
             }
         }
 
-        // Kompas & Sensor Perangkat
         function mintaIzinKompas() {
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
@@ -411,21 +431,6 @@
             } else {
                 arrowEl.style.transform = `rotate(${-heading}deg)`;
             }
-        }
-
-        // API Cuaca Posisi Saya
-        function cekCuacaLocation() {
-            if (!currentLat || !currentLng) return alert("Tunggu posisi GPS...");
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLng}&current_weather=true`;
-            
-            fetch(url)
-                .then(res => res.json())
-                .then(data => {
-                    const cw = data.current_weather;
-                    document.getElementById('weatherTemp').innerText = cw.temperature + " °C";
-                    document.getElementById('windSpeed').innerText = cw.windspeed + " km/h";
-                    alert("✅ Informasi cuaca posisi perahu diperbarui!");
-                });
         }
 
         function simpanSpotIkan() {
@@ -494,7 +499,6 @@
             return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
         }
 
-        // Realtime Firebase
         function kirimLokasiRealtime() {
             if (!currentLat || !currentLng) return alert("GPS belum terdeteksi.");
             const data = { lat: currentLat, lng: currentLng, waktu: new Date().toLocaleTimeString('id-ID'), sos: false };
