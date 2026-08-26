@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelayan Pintar V8.3</title>
+    <title>Nelayan Pintar V8.4</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,22 +11,19 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
         body { background: #eef2f5; padding: 12px; color: #333; max-width: 500px; margin: 0 auto; }
         
-        /* Header Title */
         .app-header { text-align: center; margin-bottom: 12px; }
         .app-header h1 { color: #006699; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .app-header p { color: #666; font-size: 0.85rem; font-weight: bold; }
 
-        /* Mode Switcher */
         .mode-container { display: flex; gap: 8px; margin-bottom: 12px; }
         .btn-mode { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: #dcdde1; color: #444; text-align: center; }
         .btn-mode.active-nelayan { background: #006699; color: white; }
         .btn-mode.active-keluarga { background: #27ae60; color: white; }
 
-        /* Cards */
         .card { background: white; border-radius: 12px; padding: 12px; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         h2 { font-size: 1.05rem; margin-bottom: 10px; color: #006699; display: flex; align-items: center; gap: 6px; }
 
-        /* Weather Card (Tampilan khas V8.2) */
+        /* Weather Card */
         .weather-card { background: linear-gradient(135deg, #0077b6, #0096c7); color: white; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
         .weather-card h2 { color: white; border: none; }
         .weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
@@ -37,7 +34,7 @@
 
         /* Compass Visual */
         .compass-card { background: #1e272e; color: white; border-radius: 12px; padding: 12px; text-align: center; margin-bottom: 12px; }
-        .compass-disc { width: 80px; height: 80px; border: 4px solid #f1c40f; border-radius: 50%; margin: 8px auto; display: flex; align-items: center; justify-content: center; font-size: 2rem; transition: transform 0.2s ease; }
+        .compass-disc { width: 90px; height: 90px; border: 4px solid #f1c40f; border-radius: 50%; margin: 8px auto; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; transition: transform 0.1s linear; }
 
         /* Dashboard Info */
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
@@ -52,11 +49,11 @@
         .btn-orange { background: #e67e22; }
         .btn-red { background: #e74c3c; }
         .btn-dark { background: #2c3e50; }
+        .btn-yellow { background: #f1c40f; color: #000; }
         .btn-sm { padding: 4px 8px; font-size: 0.75rem; width: auto; margin-top: 0; }
 
-        /* Map & List */
         #map { height: 250px; width: 100%; border-radius: 8px; margin-top: 5px; }
-        input[type="text"] { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 6px; margin-top: 5px; font-size: 0.85rem; }
+        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-top: 5px; font-size: 0.9rem; }
         ul { list-style: none; padding: 0; margin-top: 5px; }
         li { background: #f8f9fa; padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
 
@@ -92,7 +89,7 @@
 <body>
 
     <div class="app-header">
-        <h1>🚤 NELAYAN PINTAR V8.3</h1>
+        <h1>🚤 NELAYAN PINTAR V8.4</h1>
         <p>🧭 NAVIGASI LAUT & CUACA REALTIME</p>
     </div>
 
@@ -105,7 +102,7 @@
     <!-- MODE NELAYAN -->
     <div id="viewNelayan">
         
-        <!-- INFORMASI CUACA & LAUT (Sesuai Gambar V8.2) -->
+        <!-- INFORMASI CUACA & LAUT -->
         <div class="weather-card">
             <h2>🌤️ INFORMASI CUACA & LAUT</h2>
             <div class="weather-grid">
@@ -138,7 +135,8 @@
             <div style="font-size: 0.75rem; color: #ccc;">KOMPAS HP & PANAH NAVIGASI</div>
             <div id="compassArrow" class="compass-disc">⬆️</div>
             <div id="headingVal" style="font-size: 1.2rem; font-weight: bold; color: #f1c40f;">0° U</div>
-            <div id="targetNavInfo" style="font-size: 0.75rem; color: #2ecc71; margin-top: 4px;">Navigasi: -</div>
+            <div id="targetNavInfo" style="font-size: 0.85rem; color: #2ecc71; margin-top: 4px; font-weight: bold;">Navigasi: Belum Memilih Tujuan</div>
+            <button class="btn btn-yellow" onclick="mintaIzinKompas()" style="margin-top: 8px;">🧩 AKTIFKAN SENSOR KOMPAS HP</button>
         </div>
 
         <!-- POSISI GPS NELAYAN -->
@@ -174,7 +172,7 @@
         <!-- INPUT KOORDINAT WA -->
         <div class="card">
             <h2>📍 Tempel Koordinat (WA / Manual)</h2>
-            <input type="text" id="inputWaCoords" placeholder="Contoh: -6.12345, 106.78901">
+            <input type="text" id="inputWaCoords" placeholder="Contoh: -6.12345, 106.78901 atau -6.12345 106.78901">
             <button class="btn btn-dark" onclick="tujuKoordinatWA()">🎯 Tuju Koordinat Ini</button>
         </div>
 
@@ -276,6 +274,76 @@
             }
         }
 
+        // AKTIFFKAN SENSOR KOMPAS (iOS & Android)
+        function mintaIzinKompas() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                // Untuk iOS / iPhone
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation, true);
+                            alert("✅ Sensor Kompas Berhasil Diaktifkan!");
+                        } else {
+                            alert("⚠️ Izin Kompas Ditolak oleh Perangkat.");
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // Untuk Android / Browser Standar
+                window.addEventListener('deviceorientationabsolute', handleOrientation, true) ||
+                window.addEventListener('deviceorientation', handleOrientation, true);
+                alert("✅ Listener Kompas HP Aktif!");
+            }
+        }
+
+        function handleOrientation(event) {
+            let compassHeading = null;
+
+            if (event.webkitCompassHeading) {
+                // iOS
+                compassHeading = event.webkitCompassHeading;
+            } else if (event.alpha !== null) {
+                // Android
+                compassHeading = 360 - event.alpha;
+            }
+
+            if (compassHeading !== null) {
+                heading = compassHeading;
+                document.getElementById('headingVal').innerText = Math.round(heading) + "° U";
+                updateNavigasiPanah();
+            }
+        }
+
+        function updateNavigasiPanah() {
+            const arrowEl = document.getElementById('compassArrow');
+            if (targetLat && targetLng && currentLat && currentLng) {
+                const bearing = hitungBearing(currentLat, currentLng, targetLat, targetLng);
+                const relAngle = bearing - heading;
+                arrowEl.style.transform = `rotate(${relAngle}deg)`;
+                
+                const d = hitungJarak(currentLat, currentLng, targetLat, targetLng);
+                document.getElementById('targetNavInfo').innerText = `Tujuan: ${d.toFixed(2)} km (${Math.round(bearing)}°)`;
+            } else {
+                arrowEl.style.transform = `rotate(${-heading}deg)`;
+            }
+        }
+
+        // Tuju Koordinat WA (Perbaikan Parser Regex)
+        function tujuKoordinatWA() {
+            const text = document.getElementById('inputWaCoords').value;
+            if(!text) return alert("Silakan tempel teks koordinat terlebih dahulu!");
+
+            // Regex fleksibel membaca format koordinat apapun
+            const match = text.match(/(-?\d+\.\d+)[\s,]+(-?\d+\.\d+)/);
+            if (match) {
+                targetLat = parseFloat(match[1]);
+                targetLng = parseFloat(match[2]);
+                tujuSpot(targetLat, targetLng, "Koordinat Pilihan");
+            } else {
+                alert("Format koordinat tidak terbaca! Pastikan contohnya seperti: -6.12345, 106.78901");
+            }
+        }
+
         // API Fitur Cuaca (Open-Meteo)
         function cekCuacaLocation() {
             if (!currentLat || !currentLng) return alert("Tunggu lokasi GPS terdeteksi...");
@@ -296,31 +364,6 @@
         function getArahAngin(deg) {
             const dirs = ['Utara', 'Timur Laut', 'Timur', 'Tenggara', 'Selatan', 'Barat Daya', 'Barat', 'Barat Laut'];
             return dirs[Math.round(deg / 45) % 8];
-        }
-
-        // Kompas HP
-        if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', function(e) {
-                if (e.alpha !== null) {
-                    heading = e.alpha;
-                    document.getElementById('headingVal').innerText = Math.round(heading) + "° U";
-                    updateNavigasiPanah();
-                }
-            }, true);
-        }
-
-        function updateNavigasiPanah() {
-            const arrowEl = document.getElementById('compassArrow');
-            if (targetLat && targetLng && currentLat && currentLng) {
-                const bearing = hitungBearing(currentLat, currentLng, targetLat, targetLng);
-                const relAngle = bearing - heading;
-                arrowEl.style.transform = `rotate(${relAngle}deg)`;
-                
-                const d = hitungJarak(currentLat, currentLng, targetLat, targetLng);
-                document.getElementById('targetNavInfo').innerText = `Tujuan: ${d.toFixed(2)} km (${Math.round(bearing)}°)`;
-            } else {
-                arrowEl.style.transform = `rotate(${-heading}deg)`;
-            }
         }
 
         function setTitikAwal() {
@@ -358,7 +401,7 @@
             targetMarker = L.marker([targetLat, targetLng]).addTo(map).bindPopup("🎯 " + nama).openPopup();
             map.panTo([targetLat, targetLng]);
             updateNavigasiPanah();
-            alert("🎯 Mengarah ke: " + nama);
+            alert("🎯 Berhasil! Panah navigasi kompas sekarang mengarah ke: " + nama);
         }
 
         function tampilkanSpotTersimpan() {
@@ -391,18 +434,6 @@
             });
         }
 
-        function tujuKoordinatWA() {
-            const text = document.getElementById('inputWaCoords').value;
-            const match = text.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
-            if (match) {
-                targetLat = parseFloat(match[1]);
-                targetLng = parseFloat(match[2]);
-                tujuSpot(targetLat, targetLng, "Koordinat Manual");
-            } else {
-                alert("Format koordinat salah! Contoh: -6.12345, 106.78901");
-            }
-        }
-
         function hitungJarak(lat1, lon1, lat2, lon2) {
             const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -420,7 +451,7 @@
             return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
         }
 
-        // Synchronize Firebase
+        // Firebase Realtime
         function kirimLokasiRealtime() {
             if (!currentLat || !currentLng) return alert("GPS belum terdeteksi.");
             const data = { lat: currentLat, lng: currentLng, waktu: new Date().toLocaleTimeString('id-ID'), sos: false };
