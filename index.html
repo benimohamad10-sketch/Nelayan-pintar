@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelayan Pintar V8.6</title>
+    <title>Nelayan Pintar V8.7</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -89,7 +89,7 @@
 <body>
 
     <div class="app-header">
-        <h1>🚤 NELAYAN PINTAR V8.6</h1>
+        <h1>🚤 NELAYAN PINTAR V8.7</h1>
         <p>🧭 NAVIGASI LAUT & CUACA REALTIME</p>
     </div>
 
@@ -180,7 +180,7 @@
         <div class="card">
             <h2>📍 Tempel Koordinat (WA / Manual)</h2>
             <input type="text" id="inputWaCoords" placeholder="Contoh: -6.12345, 106.78901">
-            <button class="btn btn-dark" onclick="tujuKoordinatWA()">🎯 Tuju Koordinat Ini</button>
+            <button class="btn btn-dark" onclick="tujuKoordinatWA()">🎯 Tuju & Simpan Ke Spot Mancing</button>
         </div>
 
         <!-- DAFTAR SPOT MANCING -->
@@ -326,10 +326,41 @@
 
             map.panTo([targetLat, targetLng]);
             updateNavigasiPanah();
-            alert("🎯 Menuju ke: " + nama + "\nGaris navigasi merah & perkiraan cuaca tujuan aktif!");
         }
 
-        // --- FUNGSI CUACA DINAMIS & AKURAT ---
+        // --- TEMPEL KOORDINAT WA DAN OTOMATIS SIMPAN KE LIST SPOT ---
+        function tujuKoordinatWA() {
+            const text = document.getElementById('inputWaCoords').value;
+            if(!text) return alert("Tempelkan teks koordinat dulu Pak!");
+
+            const match = text.match(/(-?\d+\.\d+)[\s,]+(-?\d+\.\d+)/);
+            if (match) {
+                const lat = parseFloat(match[1]);
+                const lng = parseFloat(match[2]);
+
+                // Tanya nama spot ke nelayan
+                const namaInput = prompt("Beri nama untuk titik koordinat ini:", "Spot WA " + (spotList.length + 1));
+                const namaSpot = namaInput ? namaInput : ("Spot WA " + (spotList.length + 1));
+
+                // Simpan ke array spotList dan LocalStorage
+                const spotBaru = { id: Date.now(), nama: namaSpot, lat: lat, lng: lng };
+                spotList.push(spotBaru);
+                localStorage.setItem('spotIkan', JSON.stringify(spotList));
+
+                // Perbarui tampilan daftar spot
+                tampilkanSpotTersimpan();
+
+                // Langsung aktifkan sebagai lokasi tujuan
+                tujuSpot(lat, lng, namaSpot);
+                alert(`🎯 Titik "${namaSpot}" berhasil disimpan ke daftar tempat mancing dan dijadikan tujuan!`);
+
+                // Kosongkan kolom input
+                document.getElementById('inputWaCoords').value = "";
+            } else {
+                alert("Format koordinat tidak terbaca. Contoh benar: -6.12345, 106.78901");
+            }
+        }
+
         function parseWeatherCode(code) {
             if (code === 0) return { desc: "Cerah", icon: "☀️" };
             if (code >= 1 && code <= 3) return { desc: "Cerah Berawan", icon: "⛅" };
@@ -378,20 +409,6 @@
                     document.getElementById('targetWindSpeed').innerText = `${cw.windspeed} km/h (${windKts} kts)`;
                 })
                 .catch(err => console.log("Gagal muat cuaca tujuan: " + err.message));
-        }
-
-        function tujuKoordinatWA() {
-            const text = document.getElementById('inputWaCoords').value;
-            if(!text) return alert("Tempelkan teks koordinat dulu Pak!");
-
-            const match = text.match(/(-?\d+\.\d+)[\s,]+(-?\d+\.\d+)/);
-            if (match) {
-                const lat = parseFloat(match[1]);
-                const lng = parseFloat(match[2]);
-                tujuSpot(lat, lng, "Koordinat Pilihan");
-            } else {
-                alert("Format koordinat tidak terbaca. Contoh benar: -6.12345, 106.78901");
-            }
         }
 
         function mintaIzinKompas() {
