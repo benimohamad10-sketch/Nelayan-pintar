@@ -1,2593 +1,687 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>Nelayan Pintar V8</title>
-
-<link
-rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nelayan Pintar V8.1</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
-
-/* ==================================================
-   DASAR
-================================================== */
-
 * {
     box-sizing: border-box;
 }
 
 body {
-
     margin: 0;
-
     padding: 15px;
-
     font-family: Arial, sans-serif;
-
     background: #eaf7ff;
 }
 
 .app {
-
     max-width: 700px;
-
     margin: auto;
-
     background: white;
-
     padding: 20px;
-
     border-radius: 20px;
-
-    box-shadow:
-        0 5px 20px
-        rgba(0,0,0,.15);
+    box-shadow: 0 5px 20px rgba(0,0,0,.15);
 }
 
 h1 {
-
     text-align: center;
-
     color: #006994;
+    margin-bottom: 5px;
 }
 
 h2 {
-
     color: #006994;
-
     margin-top: 25px;
 }
 
-
-/* ==================================================
-   INPUT
-================================================== */
-
 input {
-
     width: 100%;
-
     padding: 14px;
-
     margin-top: 8px;
-
     border: 1px solid #aaa;
-
     border-radius: 10px;
-
     font-size: 16px;
 }
 
-
-/* ==================================================
-   BUTTON
-================================================== */
-
 button {
-
     width: 100%;
-
     padding: 15px;
-
     margin-top: 10px;
-
     border: none;
-
     border-radius: 12px;
-
     font-size: 16px;
-
     font-weight: bold;
-
     color: white;
-
     background: #0077b6;
+    cursor: pointer;
 }
 
 button:active {
-
     transform: scale(.98);
 }
 
-.btn-orange {
+.btn-orange { background: #f77f00; }
+.btn-green  { background: #008000; }
+.btn-purple { background: #6a4c93; }
+.btn-red    { background: #d62828; }
 
-    background: #f77f00;
-}
-
-.btn-green {
-
-    background: #008000;
-}
-
-.btn-purple {
-
-    background: #6a4c93;
-}
-
-.btn-red {
-
-    background: #d62828;
-}
-
-.btn-dark {
-
-    background: #333;
-}
-
-
-/* ==================================================
-   INFO
-================================================== */
-
-.info {
-
+.info, #status {
     margin-top: 15px;
-
     padding: 15px;
-
     background: #f1f9fc;
-
     border-radius: 12px;
-
     line-height: 1.6;
 }
 
-
-/* ==================================================
-   STATUS
-================================================== */
-
 #status {
-
-    margin-top: 15px;
-
-    padding: 15px;
-
     background: #eef9ee;
-
-    border-radius: 12px;
-
-    line-height: 1.5;
 }
 
-
-/* ==================================================
-   NAVIGASI
-================================================== */
-
 #navigasi {
-
     display: none;
-
     margin-top: 15px;
-
     padding: 20px;
-
     background: #eef9ee;
-
     border-radius: 20px;
-
     text-align: center;
 }
 
 #tujuanAktif {
-
-    font-size: 21px;
-
+    font-size: 20px;
     font-weight: bold;
 }
 
-
-/* ==================================================
-   PANAH
-================================================== */
-
+/* PANAH NAVIGASI PROPORSIOANL */
 #panahContainer {
-
-    width: 220px;
-
-    height: 220px;
-
-    margin: 20px auto;
-
+    width: 140px;
+    height: 140px;
+    margin: 15px auto;
     position: relative;
+    border: 3px dashed #0077b6;
+    border-radius: 50%;
+    background: #ffffff;
 }
 
 #panah {
-
     position: absolute;
-
     left: 50%;
-
     top: 50%;
-
-    width: 42px;
-
-    height: 115px;
-
+    width: 24px;
+    height: 60px;
     background: #0077b6;
-
-    border-radius: 12px;
-
-    transform:
-        translate(-50%, -50%)
-        rotate(0deg);
-
-    transform-origin:
-        50% 50%;
-
-    transition:
-        transform .25s linear;
-
-    box-shadow:
-        0 4px 10px
-        rgba(0,0,0,.25);
+    border-radius: 6px;
+    transform: translate(-50%, -50%) rotate(0deg);
+    transform-origin: 50% 50%;
+    transition: transform .2s linear;
 }
-
-
-/* ujung panah */
 
 #panah::before {
-
     content: "";
-
     position: absolute;
-
     left: 50%;
-
-    top: -55px;
-
-    transform:
-        translateX(-50%);
-
+    top: -30px;
+    transform: translateX(-50%);
     width: 0;
-
     height: 0;
-
-    border-left:
-        48px solid transparent;
-
-    border-right:
-        48px solid transparent;
-
-    border-bottom:
-        65px solid #0077b6;
-}
-
-
-/* ekor */
-
-#panah::after {
-
-    content: "";
-
-    position: absolute;
-
-    left: 50%;
-
-    bottom: -28px;
-
-    transform:
-        translateX(-50%);
-
-    width: 30px;
-
-    height: 35px;
-
-    background: #0077b6;
-
-    border-radius:
-        0 0 8px 8px;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 35px solid #0077b6;
 }
 
 #derajat {
-
-    font-size: 27px;
-
+    font-size: 22px;
     font-weight: bold;
 }
 
 #arahText {
-
-    font-size: 21px;
-
-    margin-top: 8px;
+    font-size: 18px;
+    margin-top: 5px;
 }
 
 #jarak {
-
-    font-size: 24px;
-
-    margin-top: 12px;
+    font-size: 22px;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #d62828;
 }
 
-
-/* ==================================================
-   KOMPAS
-================================================== */
-
 #kompasPanel {
-
     display: none;
-
     margin-top: 15px;
-
     padding: 20px;
-
     background: #f5effb;
-
     border-radius: 20px;
-
     text-align: center;
 }
 
 #kompas {
-
-    width: 230px;
-
-    height: 230px;
-
-    border:
-        6px solid #333;
-
+    width: 180px;
+    height: 180px;
+    border: 5px solid #333;
     border-radius: 50%;
-
     margin: 15px auto;
-
     position: relative;
-
     background: white;
 }
 
 .angka {
-
     position: absolute;
-
-    font-size: 20px;
-
+    font-size: 16px;
     font-weight: bold;
 }
 
-.N {
-
-    top: 10px;
-
-    left: 50%;
-
-    transform:
-        translateX(-50%);
-}
-
-.E {
-
-    right: 10px;
-
-    top: 50%;
-
-    transform:
-        translateY(-50%);
-}
-
-.S {
-
-    bottom: 10px;
-
-    left: 50%;
-
-    transform:
-        translateX(-50%);
-}
-
-.W {
-
-    left: 10px;
-
-    top: 50%;
-
-    transform:
-        translateY(-50%);
-}
+.N { top: 8px; left: 50%; transform: translateX(-50%); }
+.E { right: 8px; top: 50%; transform: translateY(-50%); }
+.S { bottom: 8px; left: 50%; transform: translateX(-50%); }
+.W { left: 8px; top: 50%; transform: translateY(-50%); }
 
 #jarum {
-
     position: absolute;
-
     width: 6px;
-
-    height: 90px;
-
+    height: 70px;
     left: 50%;
-
     top: 50%;
-
     background: red;
-
-    transform-origin:
-        bottom center;
-
-    transform:
-        translate(-50%, -100%)
-        rotate(0deg);
-
-    border-radius: 5px;
+    transform-origin: bottom center;
+    transform: translate(-50%, -100%) rotate(0deg);
+    border-radius: 4px;
 }
 
 #tengah {
-
     position: absolute;
-
-    width: 18px;
-
-    height: 18px;
-
+    width: 14px;
+    height: 14px;
     background: #222;
-
     border-radius: 50%;
-
     left: 50%;
-
     top: 50%;
-
-    transform:
-        translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 }
-
-#headingText {
-
-    font-size: 22px;
-
-    font-weight: bold;
-}
-
-
-/* ==================================================
-   PETA
-================================================== */
 
 #map {
-
     width: 100%;
-
-    height: 430px;
-
+    height: 400px;
     margin-top: 15px;
-
     border-radius: 15px;
 }
 
-
-/* ==================================================
-   TITIK
-================================================== */
-
 .titik {
-
     margin-top: 12px;
-
     padding: 14px;
-
     background: #f5f5f5;
-
     border-radius: 12px;
 }
 
-.titik-aktif {
-
-    border:
-        3px solid #008000;
-
-    background:
-        #eef9ee;
+/* IKON MAP CUSTOM */
+.custom-icon {
+    font-size: 26px;
+    text-align: center;
+    line-height: 30px;
 }
-
-
-/* ==================================================
-   KOORDINAT WHATSAPP
-================================================== */
-
-#contohKoordinat {
-
-    font-size: 14px;
-
-    color: #555;
-
-    margin-top: 5px;
-}
-
 </style>
-
 </head>
-
 
 <body>
 
-
 <div class="app">
 
+<h1>🚤 NELAYAN PINTAR V8.1</h1>
+<p style="text-align:center; margin-top:0;">🧭 NAVIGASI LAUT & RUMPON</p>
 
-<h1>
-🚤 NELAYAN PINTAR
-</h1>
+<!-- TITIK BERANGKAT -->
+<h2>⚓ Titik Berangkat</h2>
+<button class="btn-orange" onclick="simpanTitikBerangkat()">⚓ SIMPAN TITIK BERANGKAT</button>
+<div class="info" id="infoBerangkat">Belum ada titik berangkat.</div>
 
-<p style="text-align:center">
-🧭 GPS • KOMPAS • RUTE • RUMPON
-</p>
+<!-- KOORDINAT WHATSAPP -->
+<h2>📱 Koordinat dari WhatsApp</h2>
+<p style="margin: 5px 0;">Tempel koordinat yang dikirim via chat/WhatsApp.</p>
+<input id="koordinatWhatsApp" type="text" placeholder="-6.123456, 106.789012">
+<div style="font-size:13px; color:#555; margin-top:4px;">Contoh: <b>-6.123456, 106.789012</b></div>
+<input id="namaKoordinat" type="text" placeholder="Nama titik (Contoh: Pulo / Rumpon 5)">
+<button onclick="simpanKoordinatWhatsApp()">💾 SIMPAN TITIK TUJUAN</button>
 
+<!-- LOKASI GPS -->
+<h2>🎣 Simpan Lokasi dari GPS</h2>
+<input id="namaLokasi" type="text" placeholder="Contoh: Rumpon Tengah">
+<button onclick="simpanLokasiGPS()">🎣 SIMPAN LOKASI SAYA</button>
 
-<!-- ==================================================
-     TITIK BERANGKAT
-================================================== -->
+<!-- UTILITIES -->
+<button onclick="updateGPS()">📍 PERBARUI POSISI SAYA</button>
+<button class="btn-purple" onclick="aktifkanKompas()">🧭 AKTIFKAN KOMPAS HP</button>
+<button class="btn-green" onclick="arahPulang()">⚓ ARAH PULANG</button>
 
-<h2>
-⚓ Titik Berangkat
-</h2>
+<!-- STATUS -->
+<div id="status">Belum ada aktivitas.</div>
 
-<button
-class="btn-orange"
-onclick="simpanTitikBerangkat()">
-
-⚓ SIMPAN TITIK BERANGKAT
-
-</button>
-
-<div
-class="info"
-id="infoBerangkat">
-
-Belum ada titik berangkat.
-
-</div>
-
-
-<!-- ==================================================
-     KOORDINAT DARI WHATSAPP
-================================================== -->
-
-<h2>
-📱 Koordinat dari WhatsApp
-</h2>
-
-<p>
-Tempel koordinat yang dikirim teman/nelayan.
-</p>
-
-<input
-id="koordinatWhatsApp"
-type="text"
-placeholder="-6.123456, 106.789012">
-
-<div id="contohKoordinat">
-
-Contoh:
-<b>-6.123456, 106.789012</b>
-
-</div>
-
-<input
-id="namaKoordinat"
-type="text"
-placeholder="Nama titik, contoh: Rumpon 5">
-
-<button
-onclick="simpanKoordinatWhatsApp()">
-
-💾 SIMPAN TITIK TUJUAN
-
-</button>
-
-
-<!-- ==================================================
-     SIMPAN DARI GPS
-================================================== -->
-
-<h2>
-🎣 Simpan Lokasi dari GPS
-</h2>
-
-<input
-id="namaLokasi"
-type="text"
-placeholder="Contoh: Rumpon 1">
-
-<button
-onclick="simpanLokasiGPS()">
-
-🎣 SIMPAN LOKASI SAYA
-
-</button>
-
-
-<!-- ==================================================
-     GPS
-================================================== -->
-
-<button
-onclick="updateGPS()">
-
-📍 PERBARUI POSISI SAYA
-
-</button>
-
-
-<!-- ==================================================
-     KOMPAS
-================================================== -->
-
-<button
-class="btn-purple"
-onclick="aktifkanKompas()">
-
-🧭 AKTIFKAN KOMPAS
-
-</button>
-
-
-<!-- ==================================================
-     ARAH PULANG
-================================================== -->
-
-<button
-class="btn-green"
-onclick="arahPulang()">
-
-⚓ ARAH PULANG
-
-</button>
-
-
-<!-- ==================================================
-     STATUS
-================================================== -->
-
-<div id="status">
-
-Belum ada aktivitas.
-
-</div>
-
-
-<!-- ==================================================
-     NAVIGASI
-================================================== -->
-
+<!-- PANEL NAVIGASI -->
 <div id="navigasi">
-
-
-<div id="tujuanAktif">
-
-🎯 Tujuan: -
-
+    <div id="tujuanAktif">🎯 Tujuan: -</div>
+    <div id="panahContainer">
+        <div id="panah"></div>
+    </div>
+    <div id="derajat">Arah tujuan: -</div>
+    <div id="arahText">-</div>
+    <div id="jarak">📏 Jarak: -</div>
 </div>
 
-
-<div id="panahContainer">
-
-<div id="panah">
-</div>
-
-</div>
-
-
-<div id="derajat">
-
-Arah tujuan: -
-
-</div>
-
-
-<div id="arahText">
-
--
-
-</div>
-
-
-<div id="jarak">
-
-📏 Jarak: -
-
-</div>
-
-
-</div>
-
-
-<!-- ==================================================
-     KOMPAS
-================================================== -->
-
+<!-- KOMPAS PANEL -->
 <div id="kompasPanel">
-
-<h2>
-🧭 KOMPAS
-</h2>
-
-
-<div id="kompas">
-
-
-<div class="angka N">
-N
+    <h2>🧭 KOMPAS HP</h2>
+    <div id="kompas">
+        <div class="angka N">N</div>
+        <div class="angka E">E</div>
+        <div class="angka S">S</div>
+        <div class="angka W">W</div>
+        <div id="jarum"></div>
+        <div id="tengah"></div>
+    </div>
+    <div id="headingText" style="font-size:18px; font-weight:bold;">Arah HP: -</div>
 </div>
 
-<div class="angka E">
-E
-</div>
+<!-- PETA -->
+<h2>🗺️ Peta Navigasi</h2>
+<div id="map"></div>
 
-<div class="angka S">
-S
-</div>
-
-<div class="angka W">
-W
-</div>
-
-
-<div id="jarum">
-</div>
-
-
-<div id="tengah">
-</div>
-
+<!-- DAFTAR TITIK -->
+<h2>📋 Titik Tersimpan</h2>
+<div id="daftarLokasi"></div>
 
 </div>
 
-
-<div id="headingText">
-
-Arah iPhone: -
-
-</div>
-
-</div>
-
-
-<!-- ==================================================
-     PETA
-================================================== -->
-
-<h2>
-🗺️ Peta Navigasi
-</h2>
-
-<div id="map">
-</div>
-
-
-<!-- ==================================================
-     DAFTAR TITIK
-================================================== -->
-
-<h2>
-📋 Titik Tersimpan
-</h2>
-
-<div id="daftarLokasi">
-</div>
-
-
-</div>
-
-
-<script
-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-</script>
-
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 
-/*
-======================================================
- NELAYAN PINTAR V8
-======================================================
-
-FITUR:
-
-GPS
-KOMPAS
-RUMPON
-KOORDINAT WHATSAPP
-PETA
-GARIS RUTE
-PANAH
-ARAH PULANG
-
-======================================================
-*/
-
-
-// ==================================================
-// DATA
-// ==================================================
-
-let lokasiTersimpan =
-JSON.parse(
-localStorage.getItem(
-"lokasiNelayanV8"
-)
-) || [];
-
-
-let titikBerangkat =
-JSON.parse(
-localStorage.getItem(
-"titikBerangkatV8"
-)
-) || null;
-
-
+let lokasiTersimpan = JSON.parse(localStorage.getItem("lokasiNelayanV8")) || [];
+let titikBerangkat = JSON.parse(localStorage.getItem("titikBerangkatV8")) || null;
 let posisiSaya = null;
-
 let tujuanAktif = null;
-
 let headingIphone = 0;
-
 let watchID = null;
-
 let garisRute = null;
 
+// INISIALISASI PETA
+const map = L.map("map").setView([-2.5, 118], 5);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap"
+}).addTo(map);
 
-// ==================================================
-// PETA
-// ==================================================
+const markerLayer = L.layerGroup().addTo(map);
 
-const map =
-L.map("map")
-.setView(
-[-2.5,118],
-5
-);
-
-
-L.tileLayer(
-
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-
-{
-
-maxZoom: 19,
-
-attribution:
-"&copy; OpenStreetMap"
-
+// IKON CUSTOM
+function buatIkon(emoji) {
+    return L.divIcon({
+        html: `<div class="custom-icon">${emoji}</div>`,
+        className: '',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+    });
 }
 
-).addTo(map);
-
-
-const markerLayer =
-L.layerGroup()
-.addTo(map);
-
-
-// ==================================================
-// AWAL
-// ==================================================
-
 tampilkanBerangkat();
-
 tampilkanLokasi();
-
 tampilkanMarker();
 
-
-// ==================================================
 // SIMPAN TITIK BERANGKAT
-// ==================================================
-
 function simpanTitikBerangkat() {
-
-
-if (!navigator.geolocation) {
-
-statusText(
-"❌ GPS tidak tersedia."
-);
-
-return;
-
+    if (!navigator.geolocation) {
+        statusText("❌ GPS tidak tersedia.");
+        return;
+    }
+    statusText("⏳ Mengambil titik berangkat...");
+    navigator.geolocation.getCurrentPosition(function(position) {
+        titikBerangkat = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            akurasi: Math.round(position.coords.accuracy),
+            waktu: new Date().toLocaleString("id-ID")
+        };
+        localStorage.setItem("titikBerangkatV8", JSON.stringify(titikBerangkat));
+        statusText("✅ Titik berangkat tersimpan.");
+        tampilkanBerangkat();
+        tampilkanMarker();
+        map.setView([titikBerangkat.latitude, titikBerangkat.longitude], 15);
+    }, function() {
+        statusText("❌ GPS gagal mendapatkan lokasi.");
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
 }
-
-
-statusText(
-"⏳ Mengambil titik berangkat..."
-);
-
-
-navigator.geolocation.getCurrentPosition(
-
-function(position) {
-
-
-titikBerangkat = {
-
-latitude:
-position.coords.latitude,
-
-longitude:
-position.coords.longitude,
-
-akurasi:
-Math.round(
-position.coords.accuracy
-),
-
-waktu:
-new Date()
-.toLocaleString("id-ID")
-
-};
-
-
-localStorage.setItem(
-
-"titikBerangkatV8",
-
-JSON.stringify(
-titikBerangkat
-)
-
-);
-
-
-statusText(
-"✅ Titik berangkat tersimpan."
-);
-
-
-tampilkanBerangkat();
-
-tampilkanMarker();
-
-
-map.setView(
-
-[
-titikBerangkat.latitude,
-titikBerangkat.longitude
-],
-
-15
-
-);
-
-},
-
-function() {
-
-statusText(
-"❌ GPS gagal mendapatkan lokasi."
-);
-
-},
-
-{
-
-enableHighAccuracy:true,
-
-timeout:15000,
-
-maximumAge:0
-
-}
-
-);
-
-}
-
-
-// ==================================================
-// TAMPIL BERANGKAT
-// ==================================================
 
 function tampilkanBerangkat() {
-
-
-const box =
-document.getElementById(
-"infoBerangkat"
-);
-
-
-if (!titikBerangkat) {
-
-box.innerHTML =
-"⚠️ Belum ada titik berangkat.";
-
-return;
-
+    const box = document.getElementById("infoBerangkat");
+    if (!titikBerangkat) {
+        box.innerHTML = "⚠️ Belum ada titik berangkat.";
+        return;
+    }
+    box.innerHTML = `
+        <div class="titik">
+            ⚓ <b>TITIK BERANGKAT</b><br><br>
+            📍 Lat: ${titikBerangkat.latitude}<br>
+            📍 Lon: ${titikBerangkat.longitude}<br>
+            🎯 Akurasi: ± ${titikBerangkat.akurasi} meter<br>
+            🕐 ${titikBerangkat.waktu}
+        </div>`;
 }
 
-
-box.innerHTML = `
-
-<div class="titik">
-
-⚓ <b>TITIK BERANGKAT</b>
-
-<br><br>
-
-📍 Latitude:
-${titikBerangkat.latitude}
-
-<br>
-
-📍 Longitude:
-${titikBerangkat.longitude}
-
-<br>
-
-🎯 Akurasi:
-± ${titikBerangkat.akurasi} meter
-
-<br>
-
-🕐 ${titikBerangkat.waktu}
-
-</div>
-
-`;
-
-}
-
-
-// ==================================================
 // SIMPAN LOKASI GPS
-// ==================================================
-
 function simpanLokasiGPS() {
+    const nama = document.getElementById("namaLokasi").value.trim();
+    if (!nama) { alert("Masukkan nama lokasi."); return; }
+    if (!navigator.geolocation) return;
 
-
-const nama =
-document.getElementById(
-"namaLokasi"
-).value.trim();
-
-
-if (!nama) {
-
-alert(
-"Masukkan nama lokasi."
-);
-
-return;
-
+    statusText("⏳ Mengambil lokasi GPS...");
+    navigator.geolocation.getCurrentPosition(function(position) {
+        const lokasi = {
+            nama: nama,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            akurasi: Math.round(position.coords.accuracy),
+            waktu: new Date().toLocaleString("id-ID"),
+            sumber: "GPS"
+        };
+        lokasiTersimpan.push(lokasi);
+        simpanData();
+        document.getElementById("namaLokasi").value = "";
+        statusText("✅ Lokasi GPS tersimpan.");
+        tampilkanLokasi();
+        tampilkanMarker();
+    }, function() {
+        statusText("❌ GPS gagal.");
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
 }
 
-
-if (!navigator.geolocation) {
-
-return;
-
-}
-
-
-statusText(
-"⏳ Mengambil lokasi GPS..."
-);
-
-
-navigator.geolocation.getCurrentPosition(
-
-function(position) {
-
-
-const lokasi = {
-
-nama:nama,
-
-latitude:
-position.coords.latitude,
-
-longitude:
-position.coords.longitude,
-
-akurasi:
-Math.round(
-position.coords.accuracy
-),
-
-waktu:
-new Date()
-.toLocaleString("id-ID"),
-
-sumber:
-"GPS"
-
-};
-
-
-lokasiTersimpan.push(
-lokasi
-);
-
-
-simpanData();
-
-
-document.getElementById(
-"namaLokasi"
-).value = "";
-
-
-statusText(
-"✅ Lokasi GPS tersimpan."
-);
-
-
-tampilkanLokasi();
-
-tampilkanMarker();
-
-},
-
-function() {
-
-statusText(
-"❌ GPS gagal."
-);
-
-},
-
-{
-
-enableHighAccuracy:true,
-
-timeout:15000,
-
-maximumAge:0
-
-}
-
-);
-
-}
-
-
-// ==================================================
 // SIMPAN KOORDINAT WHATSAPP
-// ==================================================
-
 function simpanKoordinatWhatsApp() {
+    const input = document.getElementById("koordinatWhatsApp").value.trim();
+    const nama = document.getElementById("namaKoordinat").value.trim();
 
+    if (!input || !nama) {
+        alert("Mohon isi koordinat dan nama titik.");
+        return;
+    }
 
-const input =
-document.getElementById(
-"koordinatWhatsApp"
-).value.trim();
+    const bagian = input.split(",");
+    if (bagian.length !== 2) {
+        alert("Format koordinat salah.\nContoh: -6.123456, 106.789012");
+        return;
+    }
 
+    const lat = parseFloat(bagian[0].trim());
+    const lon = parseFloat(bagian[1].trim());
 
-const nama =
-document.getElementById(
-"namaKoordinat"
-).value.trim();
+    if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        alert("Koordinat tidak valid. Periksa nilai Latitude (-90 s/d 90) dan Longitude (-180 s/d 180).");
+        return;
+    }
 
+    const lokasi = {
+        nama: nama,
+        latitude: lat,
+        longitude: lon,
+        akurasi: null,
+        waktu: new Date().toLocaleString("id-ID"),
+        sumber: "WhatsApp"
+    };
 
-if (!input) {
+    lokasiTersimpan.push(lokasi);
+    simpanData();
 
-alert(
-"Masukkan koordinat terlebih dahulu."
-);
-
-return;
-
+    document.getElementById("koordinatWhatsApp").value = "";
+    document.getElementById("namaKoordinat").value = "";
+    statusText("✅ Titik tersimpan.");
+    tampilkanLokasi();
+    tampilkanMarker();
+    pilihTujuan(lokasiTersimpan.length - 1);
 }
-
-
-if (!nama) {
-
-alert(
-"Masukkan nama titik."
-);
-
-return;
-
-}
-
-
-// --------------------------------------------------
-// Pisahkan latitude dan longitude
-// --------------------------------------------------
-
-const bagian =
-input.split(",");
-
-
-if (bagian.length !== 2) {
-
-alert(
-
-"Format koordinat salah.\n\n" +
-
-"Contoh:\n" +
-
-"-6.123456, 106.789012"
-
-);
-
-return;
-
-}
-
-
-const lat =
-parseFloat(
-bagian[0].trim()
-);
-
-
-const lon =
-parseFloat(
-bagian[1].trim()
-);
-
-
-if (
-
-isNaN(lat) ||
-
-isNaN(lon) ||
-
-lat < -90 ||
-
-lat > 90 ||
-
-lon < -180 ||
-
-lon > 180
-
-) {
-
-alert(
-"Koordinat tidak valid."
-);
-
-return;
-
-}
-
-
-// --------------------------------------------------
-// Buat data
-// --------------------------------------------------
-
-const lokasi = {
-
-nama:nama,
-
-latitude:lat,
-
-longitude:lon,
-
-akurasi:null,
-
-waktu:
-new Date()
-.toLocaleString("id-ID"),
-
-sumber:
-"WhatsApp"
-
-};
-
-
-lokasiTersimpan.push(
-lokasi
-);
-
-
-simpanData();
-
-
-// --------------------------------------------------
-// Kosongkan input
-// --------------------------------------------------
-
-document.getElementById(
-"koordinatWhatsApp"
-).value = "";
-
-
-document.getElementById(
-"namaKoordinat"
-).value = "";
-
-
-statusText(
-"✅ Titik dari WhatsApp berhasil disimpan."
-);
-
-
-tampilkanLokasi();
-
-tampilkanMarker();
-
-
-// --------------------------------------------------
-// Langsung pilih sebagai tujuan
-// --------------------------------------------------
-
-pilihTujuan(
-lokasiTersimpan.length - 1
-);
-
-}
-
-
-// ==================================================
-// SIMPAN DATA
-// ==================================================
 
 function simpanData() {
-
-localStorage.setItem(
-
-"lokasiNelayanV8",
-
-JSON.stringify(
-lokasiTersimpan
-)
-
-);
-
+    localStorage.setItem("lokasiNelayanV8", JSON.stringify(lokasiTersimpan));
 }
 
-
-// ==================================================
-// UPDATE GPS
-// ==================================================
-
+// UPDATE & TRACKING GPS
 function updateGPS() {
-
-
-if (!navigator.geolocation) {
-
-statusText(
-"❌ GPS tidak tersedia."
-);
-
-return;
-
+    if (!navigator.geolocation) {
+        statusText("❌ GPS tidak tersedia.");
+        return;
+    }
+    statusText("⏳ Memperbarui posisi...");
+    navigator.geolocation.getCurrentPosition(function(position) {
+        posisiSaya = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            akurasi: Math.round(position.coords.accuracy)
+        };
+        statusText(`✅ Posisi diperbarui.<br>📍 Lat: ${posisiSaya.latitude.toFixed(6)} | Lon: ${posisiSaya.longitude.toFixed(6)}<br>🎯 Akurasi: ± ${posisiSaya.akurasi} m`);
+        tampilkanMarker();
+        if (tujuanAktif) updateNavigasi();
+    }, function() {
+        statusText("❌ GPS gagal mengambil lokasi.");
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
 }
-
-
-statusText(
-"⏳ Memperbarui posisi..."
-);
-
-
-navigator.geolocation.getCurrentPosition(
-
-function(position) {
-
-
-posisiSaya = {
-
-latitude:
-position.coords.latitude,
-
-longitude:
-position.coords.longitude,
-
-akurasi:
-Math.round(
-position.coords.accuracy
-)
-
-};
-
-
-statusText(`
-
-✅ Posisi perahu diperbarui.
-
-<br><br>
-
-📍 Latitude:
-${posisiSaya.latitude.toFixed(6)}
-
-<br>
-
-📍 Longitude:
-${posisiSaya.longitude.toFixed(6)}
-
-<br>
-
-🎯 Akurasi:
-± ${posisiSaya.akurasi} meter
-
-`);
-
-
-tampilkanMarker();
-
-
-if (tujuanAktif) {
-
-updateNavigasi();
-
-}
-
-},
-
-function(error) {
-
-
-statusText(
-
-"❌ GPS tidak dapat mengambil lokasi."
-
-);
-
-},
-
-{
-
-enableHighAccuracy:true,
-
-timeout:15000,
-
-maximumAge:0
-
-}
-
-);
-
-}
-
-
-// ==================================================
-// GPS BERKELANJUTAN
-// ==================================================
 
 function mulaiTracking() {
+    if (!navigator.geolocation) return;
+    if (watchID !== null) navigator.geolocation.clearWatch(watchID);
 
-
-if (!navigator.geolocation) {
-
-return;
-
+    watchID = navigator.geolocation.watchPosition(function(position) {
+        posisiSaya = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            akurasi: Math.round(position.coords.accuracy)
+        };
+        if (tujuanAktif) updateNavigasi();
+        tampilkanMarker();
+    }, null, { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 });
 }
 
-
-if (watchID !== null) {
-
-navigator.geolocation.clearWatch(
-watchID
-);
-
-}
-
-
-watchID =
-navigator.geolocation.watchPosition(
-
-function(position) {
-
-
-posisiSaya = {
-
-latitude:
-position.coords.latitude,
-
-longitude:
-position.coords.longitude,
-
-akurasi:
-Math.round(
-position.coords.accuracy
-)
-
-};
-
-
-if (tujuanAktif) {
-
-updateNavigasi();
-
-}
-
-
-tampilkanMarker();
-
-},
-
-function() {
-
-console.log(
-"GPS tracking error"
-);
-
-},
-
-{
-
-enableHighAccuracy:true,
-
-maximumAge:3000,
-
-timeout:15000
-
-}
-
-);
-
-}
-
-
-// ==================================================
-// AKTIFKAN KOMPAS
-// ==================================================
-
+// KOMPAS
 async function aktifkanKompas() {
-
-
-if (
-
-typeof DeviceOrientationEvent !==
-"undefined" &&
-
-typeof DeviceOrientationEvent
-.requestPermission ===
-"function"
-
-) {
-
-
-try {
-
-
-const izin =
-
-await DeviceOrientationEvent
-.requestPermission();
-
-
-if (izin !== "granted") {
-
-alert(
-"Izin kompas tidak diberikan."
-);
-
-return;
-
+    if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+        try {
+            const izin = await DeviceOrientationEvent.requestPermission();
+            if (izin !== "granted") { alert("Izin kompas ditolak."); return; }
+        } catch (e) {
+            alert("Gagal mengaktifkan kompas.");
+            return;
+        }
+    }
+    document.getElementById("kompasPanel").style.display = "block";
+    window.addEventListener("deviceorientation", bacaKompas, true);
+    statusText("🧭 Kompas aktif.");
 }
-
-
-}
-
-catch(error) {
-
-alert(
-"Kompas tidak dapat diaktifkan."
-);
-
-return;
-
-}
-
-}
-
-
-document.getElementById(
-"kompasPanel"
-).style.display =
-"block";
-
-
-window.addEventListener(
-
-"deviceorientation",
-
-bacaKompas,
-
-true
-
-);
-
-
-statusText(
-"🧭 Kompas aktif."
-);
-
-}
-
-
-// ==================================================
-// BACA KOMPAS
-// ==================================================
 
 function bacaKompas(event) {
+    let heading = null;
+    if (event.webkitCompassHeading !== undefined && event.webkitCompassHeading !== null) {
+        heading = event.webkitCompassHeading;
+    } else if (event.alpha !== null && event.alpha !== undefined) {
+        heading = 360 - event.alpha;
+    }
+    if (heading === null) return;
 
+    heading = (heading + 360) % 360;
+    headingIphone = heading;
 
-let heading = null;
-
-
-// iPhone
-
-if (
-
-event.webkitCompassHeading !==
-undefined &&
-
-event.webkitCompassHeading !==
-null
-
-) {
-
-heading =
-event.webkitCompassHeading;
-
+    document.getElementById("headingText").innerHTML = `🧭 Arah HP: <b>${Math.round(heading)}°</b> ${namaArah(heading)}`;
+    document.getElementById("jarum").style.transform = `translate(-50%, -100%) rotate(${heading}deg)`;
+    if (tujuanAktif) updatePanah();
 }
 
-
-// Browser lain
-
-else if (
-
-event.alpha !== null &&
-
-event.alpha !== undefined
-
-) {
-
-heading =
-360 - event.alpha;
-
-}
-
-
-if (heading === null) {
-
-return;
-
-}
-
-
-heading =
-(
-heading + 360
-) % 360;
-
-
-headingIphone =
-heading;
-
-
-document.getElementById(
-"headingText"
-).innerHTML =
-
-"🧭 Arah HP: <b>" +
-
-Math.round(heading) +
-
-"°</b> " +
-
-namaArah(heading);
-
-
-document.getElementById(
-"jarum"
-).style.transform =
-
-"translate(-50%, -100%) " +
-
-"rotate(" +
-
-heading +
-
-"deg)";
-
-
-if (tujuanAktif) {
-
-updatePanah();
-
-}
-
-}
-
-
-// ==================================================
-// PILIH TUJUAN
-// ==================================================
-
+// NAVIGASI
 function pilihTujuan(index) {
+    const lokasi = lokasiTersimpan[index];
+    if (!lokasi) return;
 
+    tujuanAktif = {
+        nama: lokasi.nama,
+        latitude: lokasi.latitude,
+        longitude: lokasi.longitude
+    };
 
-const lokasi =
-lokasiTersimpan[index];
-
-
-if (!lokasi) {
-
-return;
-
+    statusText(`🎯 Tujuan: ${lokasi.nama}`);
+    document.getElementById("navigasi").style.display = "block";
+    mulaiTracking();
+    updateGPS();
 }
-
-
-tujuanAktif = {
-
-nama:
-lokasi.nama,
-
-latitude:
-lokasi.latitude,
-
-longitude:
-lokasi.longitude,
-
-tipe:
-lokasi.sumber || "lokasi"
-
-};
-
-
-statusText(
-
-"🎯 Tujuan aktif: " +
-lokasi.nama
-
-);
-
-
-document.getElementById(
-"navigasi"
-).style.display =
-"block";
-
-
-mulaiTracking();
-
-
-updateGPS();
-
-}
-
-
-// ==================================================
-// ARAH PULANG
-// ==================================================
 
 function arahPulang() {
-
-
-if (!titikBerangkat) {
-
-alert(
-
-"Simpan titik berangkat dahulu."
-
-);
-
-return;
-
+    if (!titikBerangkat) { alert("Simpan titik berangkat terlebih dahulu."); return; }
+    tujuanAktif = {
+        nama: "⚓ TITIK BERANGKAT",
+        latitude: titikBerangkat.latitude,
+        longitude: titikBerangkat.longitude
+    };
+    statusText("⚓ Navigasi ke Titik Berangkat (Pulang)");
+    document.getElementById("navigasi").style.display = "block";
+    mulaiTracking();
+    updateGPS();
 }
-
-
-tujuanAktif = {
-
-nama:
-"⚓ TITIK BERANGKAT",
-
-latitude:
-titikBerangkat.latitude,
-
-longitude:
-titikBerangkat.longitude,
-
-tipe:
-"pulang"
-
-};
-
-
-statusText(
-"⚓ Arah pulang aktif."
-);
-
-
-document.getElementById(
-"navigasi"
-).style.display =
-"block";
-
-
-mulaiTracking();
-
-
-updateGPS();
-
-}
-
-
-// ==================================================
-// UPDATE NAVIGASI
-// ==================================================
 
 function updateNavigasi() {
+    if (!posisiSaya || !tujuanAktif) return;
 
+    const jarak = hitungJarak(posisiSaya.latitude, posisiSaya.longitude, tujuanAktif.latitude, tujuanAktif.longitude);
+    const bearing = hitungBearing(posisiSaya.latitude, posisiSaya.longitude, tujuanAktif.latitude, tujuanAktif.longitude);
 
-if (
+    document.getElementById("tujuanAktif").innerHTML = `🎯 Tujuan: <b>${tujuanAktif.nama}</b>`;
+    document.getElementById("derajat").innerHTML = `Arah tujuan: <b>${Math.round(bearing)}°</b>`;
+    document.getElementById("arahText").innerHTML = `➡️ ${namaArah(bearing)}`;
+    document.getElementById("jarak").innerHTML = `📏 Jarak: <b>${formatJarak(jarak)}</b>`;
 
-!posisiSaya ||
-
-!tujuanAktif
-
-) {
-
-return;
-
+    gambarRute();
+    updatePanah();
 }
-
-
-const jarak =
-hitungJarak(
-
-posisiSaya.latitude,
-
-posisiSaya.longitude,
-
-tujuanAktif.latitude,
-
-tujuanAktif.longitude
-
-);
-
-
-const bearing =
-hitungBearing(
-
-posisiSaya.latitude,
-
-posisiSaya.longitude,
-
-tujuanAktif.latitude,
-
-tujuanAktif.longitude
-
-);
-
-
-document.getElementById(
-"tujuanAktif"
-).innerHTML =
-
-"🎯 Tujuan: <b>" +
-
-tujuanAktif.nama +
-
-"</b>";
-
-
-document.getElementById(
-"derajat"
-).innerHTML =
-
-"Arah tujuan: <b>" +
-
-Math.round(bearing) +
-
-"°</b>";
-
-
-document.getElementById(
-"arahText"
-).innerHTML =
-
-"➡️ " +
-
-namaArah(bearing);
-
-
-document.getElementById(
-"jarak"
-).innerHTML =
-
-"📏 Jarak: <b>" +
-
-formatJarak(jarak) +
-
-"</b>";
-
-
-gambarRute();
-
-
-updatePanah();
-
-
-// Tujuan sangat dekat
-
-if (jarak < 0.05) {
-
-statusText(
-
-"🎯 Anda sudah sangat dekat dengan tujuan!"
-
-);
-
-}
-
-}
-
-
-// ==================================================
-// UPDATE PANAH
-// ==================================================
 
 function updatePanah() {
+    if (!posisiSaya || !tujuanAktif) return;
+    const bearing = hitungBearing(posisiSaya.latitude, posisiSaya.longitude, tujuanAktif.latitude, tujuanAktif.longitude);
+    let relatif = bearing - headingIphone;
 
+    while (relatif > 180) relatif -= 360;
+    while (relatif < -180) relatif += 360;
 
-if (
-
-!posisiSaya ||
-
-!tujuanAktif
-
-) {
-
-return;
-
+    document.getElementById("panah").style.transform = `translate(-50%, -50%) rotate(${relatif}deg)`;
 }
-
-
-const bearing =
-hitungBearing(
-
-posisiSaya.latitude,
-
-posisiSaya.longitude,
-
-tujuanAktif.latitude,
-
-tujuanAktif.longitude
-
-);
-
-
-let relatif =
-
-bearing -
-headingIphone;
-
-
-// Normalisasi
-
-while (relatif > 180) {
-
-relatif -= 360;
-
-}
-
-
-while (relatif < -180) {
-
-relatif += 360;
-
-}
-
-
-document.getElementById(
-"panah"
-).style.transform =
-
-"translate(-50%, -50%) " +
-
-"rotate(" +
-
-relatif +
-
-"deg)";
-
-}
-
-
-// ==================================================
-// GAMBAR RUTE
-// ==================================================
 
 function gambarRute() {
+    if (!posisiSaya || !tujuanAktif) return;
+    if (garisRute) map.removeLayer(garisRute);
 
+    garisRute = L.polyline([
+        [posisiSaya.latitude, posisiSaya.longitude],
+        [tujuanAktif.latitude, tujuanAktif.longitude]
+    ], { color: "#0077b6", weight: 5, opacity: 0.85, dashArray: "10,8" }).addTo(map);
 
-if (
-
-!posisiSaya ||
-
-!tujuanAktif
-
-) {
-
-return;
-
+    map.fitBounds(garisRute.getBounds(), { padding: [40, 40] });
 }
 
-
-if (garisRute) {
-
-map.removeLayer(
-garisRute
-);
-
+// PERHITUNGAN MATEMATIS
+function hitungJarak(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
-
-garisRute =
-L.polyline(
-
-[
-
-[
-posisiSaya.latitude,
-posisiSaya.longitude
-],
-
-[
-tujuanAktif.latitude,
-tujuanAktif.longitude
-]
-
-],
-
-{
-
-color:"#0077b6",
-
-weight:5,
-
-opacity:0.85,
-
-dashArray:
-"10,8"
-
+function hitungBearing(lat1, lon1, lat2, lon2) {
+    const φ1 = lat1 * Math.PI / 180, φ2 = lat2 * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
 }
-
-).addTo(map);
-
-
-map.fitBounds(
-
-garisRute.getBounds(),
-
-{
-
-padding:
-[30,30]
-
-}
-
-);
-
-}
-
-
-// ==================================================
-// HITUNG JARAK
-// ==================================================
-
-function hitungJarak(
-
-lat1,
-lon1,
-lat2,
-lon2
-
-) {
-
-
-const R = 6371;
-
-
-const dLat =
-
-(lat2-lat1) *
-Math.PI / 180;
-
-
-const dLon =
-
-(lon2-lon1) *
-Math.PI / 180;
-
-
-const a =
-
-Math.sin(dLat/2) *
-Math.sin(dLat/2)
-
-+
-
-Math.cos(
-lat1 * Math.PI / 180
-)
-
-*
-
-Math.cos(
-lat2 * Math.PI / 180
-)
-
-*
-
-Math.sin(dLon/2) *
-Math.sin(dLon/2);
-
-
-const c =
-
-2 *
-Math.atan2(
-
-Math.sqrt(a),
-
-Math.sqrt(1-a)
-
-);
-
-
-return R*c;
-
-}
-
-
-// ==================================================
-// HITUNG BEARING
-// ==================================================
-
-function hitungBearing(
-
-lat1,
-lon1,
-lat2,
-lon2
-
-) {
-
-
-const φ1 =
-lat1 *
-Math.PI / 180;
-
-
-const φ2 =
-lat2 *
-Math.PI / 180;
-
-
-const Δλ =
-
-(lon2-lon1) *
-Math.PI / 180;
-
-
-const y =
-
-Math.sin(Δλ) *
-Math.cos(φ2);
-
-
-const x =
-
-Math.cos(φ1) *
-Math.sin(φ2)
-
--
-
-Math.sin(φ1) *
-Math.cos(φ2) *
-Math.cos(Δλ);
-
-
-let arah =
-
-Math.atan2(y,x) *
-180 / Math.PI;
-
-
-arah =
-(arah + 360) % 360;
-
-
-return arah;
-
-}
-
-
-// ==================================================
-// NAMA ARAH
-// ==================================================
 
 function namaArah(deg) {
-
-
-if (
-deg >= 337.5 ||
-deg < 22.5
-)
-return "Utara";
-
-
-if (deg < 67.5)
-return "Timur Laut";
-
-
-if (deg < 112.5)
-return "Timur";
-
-
-if (deg < 157.5)
-return "Tenggara";
-
-
-if (deg < 202.5)
-return "Selatan";
-
-
-if (deg < 247.5)
-return "Barat Daya";
-
-
-if (deg < 292.5)
-return "Barat";
-
-
-return "Barat Laut";
-
+    if (deg >= 337.5 || deg < 22.5) return "Utara";
+    if (deg < 67.5) return "Timur Laut";
+    if (deg < 112.5) return "Timur";
+    if (deg < 157.5) return "Tenggara";
+    if (deg < 202.5) return "Selatan";
+    if (deg < 247.5) return "Barat Daya";
+    if (deg < 292.5) return "Barat";
+    return "Barat Laut";
 }
-
-
-// ==================================================
-// FORMAT JARAK
-// ==================================================
 
 function formatJarak(km) {
-
-
-if (km < 1) {
-
-return Math.round(
-km * 1000
-) + " meter";
-
+    return km < 1 ? Math.round(km * 1000) + " meter" : km.toFixed(2) + " km";
 }
 
-
-return km.toFixed(2)
-+ " km";
-
-}
-
-
-// ==================================================
-// MARKER
-// ==================================================
-
+// TAMPILAN MARKER DI PETA
 function tampilkanMarker() {
+    markerLayer.clearLayers();
 
+    // ⚓ Titik Berangkat
+    if (titikBerangkat) {
+        L.marker([titikBerangkat.latitude, titikBerangkat.longitude], { icon: buatIkon("⚓") })
+            .addTo(markerLayer).bindPopup("<b>⚓ TITIK BERANGKAT</b>");
+    }
 
-markerLayer.clearLayers();
+    // 🎣 / 📱 / 🎯 Titik Tersimpan
+    lokasiTersimpan.forEach(function(lokasi, index) {
+        let emoji = lokasi.sumber === "WhatsApp" ? "📱" : "🎣";
+        if (tujuanAktif && tujuanAktif.latitude === lokasi.latitude && tujuanAktif.longitude === lokasi.longitude) {
+            emoji = "🎯"; // Ganti ikon target jika titik tersebut sedang dituju
+        }
 
+        L.marker([lokasi.latitude, lokasi.longitude], { icon: buatIkon(emoji) })
+            .addTo(markerLayer)
+            .bindPopup(`<b>${emoji} ${lokasi.nama}</b><br>Lat: ${lokasi.latitude}<br>Lon: ${lokasi.longitude}<br><br><button onclick="pilihTujuan(${index})">🎯 MENUJU KE SINI</button>`);
+    });
 
-if (titikBerangkat) {
-
-
-L.marker(
-
-[
-titikBerangkat.latitude,
-titikBerangkat.longitude
-]
-
-)
-
-.addTo(markerLayer)
-
-.bindPopup(
-"⚓ TITIK BERANGKAT"
-);
-
+    // 🚤 Posisi Perahu
+    if (posisiSaya) {
+        L.marker([posisiSaya.latitude, posisiSaya.longitude], { icon: buatIkon("🚤") })
+            .addTo(markerLayer).bindPopup("<b>🚤 POSISI PERAHU SAYA</b>");
+    }
 }
 
-
-lokasiTersimpan.forEach(
-
-function(lokasi,index) {
-
-
-let iconText =
-"🎣";
-
-
-if (
-lokasi.sumber ===
-"WhatsApp"
-) {
-
-iconText =
-"📱";
-
-}
-
-
-L.marker(
-
-[
-lokasi.latitude,
-lokasi.longitude
-]
-
-)
-
-.addTo(markerLayer)
-
-.bindPopup(`
-
-<b>
-${iconText}
-${lokasi.nama}
-</b>
-
-<br><br>
-
-📍 ${lokasi.latitude}
-
-<br>
-
-📍 ${lokasi.longitude}
-
-<br><br>
-
-<button
-onclick="pilihTujuan(${index})">
-
-🎯 MENUJU KE SINI
-
-</button>
-
-`);
-
-});
-
-
-if (posisiSaya) {
-
-
-L.marker(
-
-[
-posisiSaya.latitude,
-posisiSaya.longitude
-]
-
-)
-
-.addTo(markerLayer)
-
-.bindPopup(
-"🚤 POSISI PERAHU"
-);
-
-}
-
-}
-
-
-// ==================================================
 // DAFTAR LOKASI
-// ==================================================
-
 function tampilkanLokasi() {
-
-
-const daftar =
-document.getElementById(
-"daftarLokasi"
-);
-
-
-if (
-lokasiTersimpan.length === 0
-) {
-
-daftar.innerHTML =
-"<p>Belum ada titik tersimpan.</p>";
-
-return;
-
+    const daftar = document.getElementById("daftarLokasi");
+    if (lokasiTersimpan.length === 0) {
+        daftar.innerHTML = "<p>Belum ada titik tersimpan.</p>";
+        return;
+    }
+    daftar.innerHTML = "";
+    lokasiTersimpan.forEach(function(lokasi, index) {
+        let sumber = lokasi.sumber === "WhatsApp" ? "📱 WhatsApp" : "📍 GPS";
+        daftar.innerHTML += `
+            <div class="titik">
+                <b>🎣 ${lokasi.nama}</b> (${sumber})<br>
+                📍 Lat: ${lokasi.latitude} | Lon: ${lokasi.longitude}<br>
+                ${lokasi.akurasi ? "🎯 Akurasi: ± " + lokasi.akurasi + " m<br>" : ""}
+                🕐 ${lokasi.waktu}<br><br>
+                <button onclick="pilihTujuan(${index})">🎯 MENUJU KE SINI</button>
+                <button onclick="lihatTitik(${index})">🗺️ LIHAT DI PETA</button>
+                <button class="btn-red" onclick="hapusLokasi(${index})">🗑️ HAPUS</button>
+            </div>`;
+    });
 }
-
-
-daftar.innerHTML = "";
-
-
-lokasiTersimpan.forEach(
-
-function(lokasi,index) {
-
-
-let sumber =
-lokasi.sumber ===
-"WhatsApp"
-?
-"📱 WhatsApp"
-:
-"📍 GPS";
-
-
-daftar.innerHTML += `
-
-<div class="titik">
-
-🎣 <b>
-${lokasi.nama}
-</b>
-
-<br><br>
-
-${sumber}
-
-<br>
-
-📍 Latitude:
-${lokasi.latitude}
-
-<br>
-
-📍 Longitude:
-${lokasi.longitude}
-
-<br>
-
-${lokasi.akurasi !== null
-?
-"🎯 Akurasi: ± " +
-lokasi.akurasi +
-" meter"
-:
-""
-}
-
-<br>
-
-🕐 ${lokasi.waktu}
-
-
-<button
-onclick="pilihTujuan(${index})">
-
-🎯 MENUJU KE SINI
-
-</button>
-
-
-<button
-onclick="lihatTitik(${index})">
-
-🗺️ LIHAT DI PETA
-
-</button>
-
-
-<button
-class="btn-red"
-onclick="hapusLokasi(${index})">
-
-🗑️ HAPUS
-
-</button>
-
-</div>
-
-`;
-
-});
-
-}
-
-
-// ==================================================
-// LIHAT TITIK
-// ==================================================
 
 function lihatTitik(index) {
-
-
-const lokasi =
-lokasiTersimpan[index];
-
-
-map.setView(
-
-[
-lokasi.latitude,
-lokasi.longitude
-],
-
-16
-
-);
-
+    const lokasi = lokasiTersimpan[index];
+    map.setView([lokasi.latitude, lokasi.longitude], 16);
 }
-
-
-// ==================================================
-// HAPUS
-// ==================================================
 
 function hapusLokasi(index) {
-
-
-if (
-!confirm(
-"Hapus titik ini?"
-)
-) {
-
-return;
-
+    if (!confirm("Hapus titik ini?")) return;
+    lokasiTersimpan.splice(index, 1);
+    simpanData();
+    tampilkanLokasi();
+    tampilkanMarker();
 }
-
-
-lokasiTersimpan.splice(
-index,
-1
-);
-
-
-simpanData();
-
-tampilkanLokasi();
-
-tampilkanMarker();
-
-}
-
-
-// ==================================================
-// STATUS
-// ==================================================
 
 function statusText(text) {
-
-document.getElementById(
-"status"
-).innerHTML =
-text;
-
+    document.getElementById("status").innerHTML = text;
 }
 
 </script>
-
 </body>
-
 </html>
