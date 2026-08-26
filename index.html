@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nelayan Pintar V8.1</title>
+<title>Nelayan Pintar V8.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
@@ -68,6 +68,7 @@ button:active {
 .btn-green  { background: #008000; }
 .btn-purple { background: #6a4c93; }
 .btn-red    { background: #d62828; }
+.btn-blue   { background: #0284c7; }
 
 .info, #status {
     margin-top: 15px;
@@ -79,6 +80,41 @@ button:active {
 
 #status {
     background: #eef9ee;
+}
+
+/* BOX CUACA & GELOMBANG */
+#cuacaPanel {
+    margin-top: 15px;
+    padding: 15px;
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.cuaca-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.cuaca-card {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.cuaca-icon {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.cuaca-val {
+    font-size: 18px;
+    font-weight: bold;
 }
 
 #navigasi {
@@ -95,7 +131,7 @@ button:active {
     font-weight: bold;
 }
 
-/* PANAH NAVIGASI PROPORSIOANL */
+/* PANAH NAVIGASI */
 #panahContainer {
     width: 140px;
     height: 140px;
@@ -216,7 +252,6 @@ button:active {
     border-radius: 12px;
 }
 
-/* IKON MAP CUSTOM */
 .custom-icon {
     font-size: 26px;
     text-align: center;
@@ -229,8 +264,36 @@ button:active {
 
 <div class="app">
 
-<h1>🚤 NELAYAN PINTAR V8.1</h1>
-<p style="text-align:center; margin-top:0;">🧭 NAVIGASI LAUT & RUMPON</p>
+<h1>🚤 NELAYAN PINTAR V8.2</h1>
+<p style="text-align:center; margin-top:0;">🧭 NAVIGASI LAUT & CUACA</p>
+
+<!-- PANEL CUACA & GELOMBANG -->
+<div id="cuacaPanel">
+    <div style="font-weight: bold; font-size: 18px; text-align: center;">🌤️ INFORMASI CUACA & LAUT</div>
+    <div class="cuaca-grid">
+        <div class="cuaca-card">
+            <span class="cuaca-icon" id="cIcon">⏳</span>
+            <div id="cKondisi" style="font-size: 14px;">Memuat...</div>
+            <div class="cuaca-val" id="cSuhu">- °C</div>
+        </div>
+        <div class="cuaca-card">
+            <span class="cuaca-icon">🌊</span>
+            <div style="font-size: 14px;">Tinggi Gelombang</div>
+            <div class="cuaca-val" id="cGelombang">- m</div>
+        </div>
+        <div class="cuaca-card">
+            <span class="cuaca-icon">💨</span>
+            <div style="font-size: 14px;">Kecepatan Angin</div>
+            <div class="cuaca-val" id="cAngin">- km/h</div>
+        </div>
+        <div class="cuaca-card">
+            <span class="cuaca-icon">🧭</span>
+            <div style="font-size: 14px;">Arah Angin</div>
+            <div class="cuaca-val" id="cArahAngin">-</div>
+        </div>
+    </div>
+    <button class="btn-blue" style="margin-top: 10px; padding: 10px;" onclick="ambilCuacaGPS()">🔄 CEK CUACA POSISI SAYA</button>
+</div>
 
 <!-- TITIK BERANGKAT -->
 <h2>⚓ Titik Berangkat</h2>
@@ -313,7 +376,6 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 
 const markerLayer = L.layerGroup().addTo(map);
 
-// IKON CUSTOM
 function buatIkon(emoji) {
     return L.divIcon({
         html: `<div class="custom-icon">${emoji}</div>`,
@@ -326,6 +388,62 @@ function buatIkon(emoji) {
 tampilkanBerangkat();
 tampilkanLokasi();
 tampilkanMarker();
+
+// CEK CUACA DARI API OPEN-METEO
+async function ambilCuacaGPS() {
+    if (!posisiSaya) {
+        alert("Silakan klik '📍 PERBARUI POSISI SAYA' terlebih dahulu agar GPS mendapatkan posisi Bapak.");
+        return;
+    }
+
+    const lat = posisiSaya.latitude;
+    const lon = posisiSaya.longitude;
+
+    document.getElementById("cKondisi").innerText = "Mengambil data...";
+
+    try {
+        // Fetch Data Cuaca & Angin
+        const resCuaca = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m`);
+        const dataCuaca = await resCuaca.json();
+
+        // Fetch Data Gelombang Laut
+        const resGel = await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&current=wave_height`);
+        const dataGel = await resGel.json();
+
+        // Parse Data Cuaca
+        const curr = dataCuaca.current;
+        const suhu = curr.temperature_2m;
+        const wind = curr.wind_speed_10m;
+        const windDir = curr.wind_direction_10m;
+        const wCode = curr.weather_code;
+
+        // Parse Data Gelombang
+        const gel = dataGel.current ? dataGel.current.wave_height : 0;
+
+        // Visual
+        document.getElementById("cSuhu").innerText = `${suhu} °C`;
+        document.getElementById("cAngin").innerText = `${wind} km/h`;
+        document.getElementById("cArahAngin").innerText = namaArah(windDir);
+        document.getElementById("cGelombang").innerText = `${gel !== null ? gel : '0'} m`;
+
+        // Interpretasi Kode Cuaca WMO
+        let kondisi = "Cerah";
+        let icon = "☀️";
+
+        if (wCode >= 1 && wCode <= 3) { kondisi = "Berawan"; icon = "⛅"; }
+        else if (wCode >= 45 && wCode <= 48) { kondisi = "Berkabut"; icon = "🌫️"; }
+        else if (wCode >= 51 && wCode <= 67) { kondisi = "Hujan Gerimis"; icon = "🌧️"; }
+        else if (wCode >= 80 && wCode <= 82) { kondisi = "Hujan Lebat"; icon = "🌧️"; }
+        else if (wCode >= 95) { kondisi = "Badai Petir"; icon = "🌩️"; }
+
+        document.getElementById("cKondisi").innerText = kondisi;
+        document.getElementById("cIcon").innerText = icon;
+
+    } catch (e) {
+        alert("Gagal mengambil data cuaca. Pastikan ada koneksi internet.");
+        document.getElementById("cKondisi").innerText = "Gagal memuat";
+    }
+}
 
 // SIMPAN TITIK BERANGKAT
 function simpanTitikBerangkat() {
@@ -414,7 +532,7 @@ function simpanKoordinatWhatsApp() {
     const lon = parseFloat(bagian[1].trim());
 
     if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-        alert("Koordinat tidak valid. Periksa nilai Latitude (-90 s/d 90) dan Longitude (-180 s/d 180).");
+        alert("Koordinat tidak valid.");
         return;
     }
 
@@ -457,6 +575,7 @@ function updateGPS() {
         };
         statusText(`✅ Posisi diperbarui.<br>📍 Lat: ${posisiSaya.latitude.toFixed(6)} | Lon: ${posisiSaya.longitude.toFixed(6)}<br>🎯 Akurasi: ± ${posisiSaya.akurasi} m`);
         tampilkanMarker();
+        ambilCuacaGPS(); // Otomatis cek cuaca begitu GPS ketemu
         if (tujuanAktif) updateNavigasi();
     }, function() {
         statusText("❌ GPS gagal mengambil lokasi.");
@@ -613,21 +732,19 @@ function formatJarak(km) {
     return km < 1 ? Math.round(km * 1000) + " meter" : km.toFixed(2) + " km";
 }
 
-// TAMPILAN MARKER DI PETA
+// MARKER
 function tampilkanMarker() {
     markerLayer.clearLayers();
 
-    // ⚓ Titik Berangkat
     if (titikBerangkat) {
         L.marker([titikBerangkat.latitude, titikBerangkat.longitude], { icon: buatIkon("⚓") })
             .addTo(markerLayer).bindPopup("<b>⚓ TITIK BERANGKAT</b>");
     }
 
-    // 🎣 / 📱 / 🎯 Titik Tersimpan
     lokasiTersimpan.forEach(function(lokasi, index) {
         let emoji = lokasi.sumber === "WhatsApp" ? "📱" : "🎣";
         if (tujuanAktif && tujuanAktif.latitude === lokasi.latitude && tujuanAktif.longitude === lokasi.longitude) {
-            emoji = "🎯"; // Ganti ikon target jika titik tersebut sedang dituju
+            emoji = "🎯";
         }
 
         L.marker([lokasi.latitude, lokasi.longitude], { icon: buatIkon(emoji) })
@@ -635,7 +752,6 @@ function tampilkanMarker() {
             .bindPopup(`<b>${emoji} ${lokasi.nama}</b><br>Lat: ${lokasi.latitude}<br>Lon: ${lokasi.longitude}<br><br><button onclick="pilihTujuan(${index})">🎯 MENUJU KE SINI</button>`);
     });
 
-    // 🚤 Posisi Perahu
     if (posisiSaya) {
         L.marker([posisiSaya.latitude, posisiSaya.longitude], { icon: buatIkon("🚤") })
             .addTo(markerLayer).bindPopup("<b>🚤 POSISI PERAHU SAYA</b>");
