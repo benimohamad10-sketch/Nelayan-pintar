@@ -95,7 +95,7 @@
 
     <div class="app-header">
         <h1>🚤 NELAYAN PINTAR V8.7</h1>
-        <!-- Gambar Lama Disisipkan Di Sini: ganti 'logo.png' dengan nama file gambar lama Anda jika berbeda -->
+        <!-- Sesuaikan nama file gambar logo di bawah ini jika berbeda -->
         <img src="logo.png" alt="Nelayan Pintar Header">
         <p>🧭 NAVIGASI LAUT & CUACA REALTIME</p>
     </div>
@@ -244,20 +244,41 @@
         const startIcon = L.divIcon({ html: '⚓', className: 'emoji-icon', iconSize: [30, 30] });
         const targetIcon = L.divIcon({ html: '🎯', className: 'emoji-icon', iconSize: [30, 30] });
 
+        // Fungsi Deteksi Jenis Ikan di Perairan Indonesia
+        function dapatkanJenisIkanIndonesia(lat, lng) {
+            if (lat >= -7.5 && lat <= -5.0 && lng >= 106.0 && lng <= 115.0) {
+                return ["Ikan Kembung", "Ikan Tongkol", "Ikan Bandeng", "Ikan Teri", "Udang Vaname"];
+            } else if (lng >= 95.0 && lng < 106.0) {
+                return ["Ikan Tenggiri", "Ikan Kembung", "Ikan Paray", "Kakap Merah", "Lobster"];
+            } else if (lat >= -10.0 && lat < -7.5) {
+                return ["Ikan Tuna Yellowfin", "Ikan Cakalang", "Ikan Lemuru", "Kakap Putih"];
+            } else if (lng >= 118.0 && lng <= 132.0) {
+                return ["Ikan Cakalang", "Ikan Tuna", "Ikan Layang", "Gurita", "Kerapu"];
+            } else if (lng > 132.0) {
+                return ["Ikan Kakap Merah", "Ikan Tuna Bigeye", "Udang Barong", "Ikan Kerapu Botol"];
+            } else {
+                return ["Ikan Cakalang", "Ikan Tongkol", "Ikan Layang", "Ikan Kerapu"];
+            }
+        }
+
+        // Fungsi Estimasi & Potensi Ikan
         function hitungEstimasiIkan(lat, lng) {
             const acak = Math.abs(Math.sin(lat + lng));
-            const estimasiEkor = Math.floor(acak * 15) + 1;
+            const estimasiEkor = Math.floor(acak * 15) + 5;
             
             let potensi = "Sangat Baik";
-            if (estimasiEkor < 5) {
+            if (estimasiEkor < 8) {
                 potensi = "Kurang";
-            } else if (estimasiEkor < 10) {
+            } else if (estimasiEkor < 12) {
                 potensi = "Sedang";
             }
             
+            const jenisIkan = dapatkanJenisIkanIndonesia(lat, lng);
+            
             return {
                 jumlah: estimasiEkor,
-                status: potensi
+                status: potensi,
+                jenis: jenisIkan.join(", ")
             };
         }
 
@@ -337,7 +358,7 @@
             if (targetMarker) map.removeLayer(targetMarker);
             targetMarker = L.marker([targetLat, targetLng], { icon: targetIcon })
                 .addTo(map)
-                .bindPopup(`🎯 Tujuan: ${nama}<br>🐟 Estimasi Ikan: ~${estimasi.jumlah} ekor (${estimasi.status})`)
+                .bindPopup(`<b>🎯 Tujuan: ${nama}</b><br>🐟 Estimasi: ~${estimasi.jumlah} ekor (${estimasi.status})<br>🐟 Potensi Jenis: <i>${estimasi.jenis}</i>`)
                 .openPopup();
 
             if (currentLat && currentLng) {
@@ -504,14 +525,15 @@
 
             spotList.forEach((s) => {
                 const estimasi = hitungEstimasiIkan(s.lat, s.lng);
-                let m = L.marker([s.lat, s.lng]).addTo(map).bindPopup(`🐟 ${s.nama}<br>Potensi: ${estimasi.status} (~${estimasi.jumlah} ekor)`);
+                let m = L.marker([s.lat, s.lng]).addTo(map).bindPopup(`<b>🐟 ${s.nama}</b><br>Potensi: ${estimasi.status} (~${estimasi.jumlah} ekor)<br>Jenis: <i>${estimasi.jenis}</i>`);
                 spotMarkers.push(m);
 
                 let li = document.createElement('li');
                 li.innerHTML = `
                     <div>
                         <b>${s.nama}</b> <small style="color:#27ae60;">(Potensi: ${estimasi.status})</small><br>
-                        <small style="color:#666">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</small>
+                        <small style="color:#666">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</small><br>
+                        <small style="color:#006699;">Target: ${estimasi.jenis}</small>
                     </div>
                     <div>
                         <button class="btn btn-blue btn-sm" onclick="tujuSpot(${s.lat}, ${s.lng}, '${s.nama}')">Tuju</button>
