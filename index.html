@@ -120,6 +120,10 @@ input {
     position: relative;
 }
 
+/* ===================================
+   PANAH NAVIGASI BARU
+=================================== */
+
 #panah {
 
     position: absolute;
@@ -127,13 +131,12 @@ input {
     left: 50%;
     top: 50%;
 
-    width: 0;
-    height: 0;
+    width: 42px;
+    height: 115px;
 
-    border-left: 35px solid transparent;
-    border-right: 35px solid transparent;
+    background: #0077b6;
 
-    border-bottom: 140px solid #d62828;
+    border-radius: 12px;
 
     transform:
         translate(-50%, -50%)
@@ -143,7 +146,41 @@ input {
 
     transition:
         transform .25s linear;
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,.25);
+
 }
+
+
+/* UJUNG PANAH */
+
+#panah::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+
+    top: -55px;
+
+    transform:
+        translateX(-50%);
+
+    width: 0;
+    height: 0;
+
+    border-left: 48px solid transparent;
+
+    border-right: 48px solid transparent;
+
+    border-bottom: 65px solid #0077b6;
+
+}
+
+
+/* EKOR PANAH */
 
 #panah::after {
 
@@ -151,16 +188,22 @@ input {
 
     position: absolute;
 
-    left: -12px;
-    bottom: -140px;
+    left: 50%;
 
-    width: 24px;
-    height: 55px;
+    bottom: -28px;
 
-    background: #d62828;
+    transform:
+        translateX(-50%);
+
+    width: 30px;
+
+    height: 35px;
+
+    background: #0077b6;
+
+    border-radius: 0 0 8px 8px;
 
 }
-
 #derajat {
     font-size: 28px;
     font-weight: bold;
