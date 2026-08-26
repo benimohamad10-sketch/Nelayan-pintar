@@ -71,24 +71,6 @@
         const firebaseConfig = {
             apiKey: "AIzaSyBnbwH-Dc6X6_51w55TQ95FlD",
             authDomain: "nelayan-pintar-481c4.firebaseapp.com",
-            <// Fungsi untuk menghitung estimasi jumlah ikan berdasarkan koordinat/lokasi
-function hitungEstimasiIkan(lat, lng) {
-  // Simulasi kalkulasi sederhana berdasarkan koordinat
-  const acak = Math.abs(Math.sin(lat + lng));
-  const estimasiEkor = Math.floor(acak * 15) + 1; // Menghasilkan 1 - 15 ekor
-  
-  let potensi = "Sangat Baik";
-  if (estimasiEkor < 5) {
-    potensi = "Kurang";
-  } else if (estimasiEkor < 10) {
-    potensi = "Sedang";
-  }
-  
-  return {
-    jumlah: estimasiEkor,
-    status: potensi
-  };
-}>
             projectId: "nelayan-pintar-481c4",
             storageBucket: "nelayan-pintar-481c4.appspot.com",
             messagingSenderId: "984230095089",
@@ -255,6 +237,24 @@ function hitungEstimasiIkan(lat, lng) {
         const startIcon = L.divIcon({ html: '⚓', className: 'emoji-icon', iconSize: [30, 30] });
         const targetIcon = L.divIcon({ html: '🎯', className: 'emoji-icon', iconSize: [30, 30] });
 
+        // Fungsi Estimasi Ikan
+        function hitungEstimasiIkan(lat, lng) {
+            const acak = Math.abs(Math.sin(lat + lng));
+            const estimasiEkor = Math.floor(acak * 15) + 1;
+            
+            let potensi = "Sangat Baik";
+            if (estimasiEkor < 5) {
+                potensi = "Kurang";
+            } else if (estimasiEkor < 10) {
+                potensi = "Sedang";
+            }
+            
+            return {
+                jumlah: estimasiEkor,
+                status: potensi
+            };
+        }
+
         function initMap() {
             map = L.map('map').setView([-6.200000, 106.816666], 12);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
@@ -326,8 +326,13 @@ function hitungEstimasiIkan(lat, lng) {
             targetLat = lat;
             targetLng = lng;
 
+            const estimasi = hitungEstimasiIkan(lat, lng);
+
             if (targetMarker) map.removeLayer(targetMarker);
-            targetMarker = L.marker([targetLat, targetLng], { icon: targetIcon }).addTo(map).bindPopup("🎯 Tujuan: " + nama).openPopup();
+            targetMarker = L.marker([targetLat, targetLng], { icon: targetIcon })
+                .addTo(map)
+                .bindPopup(`🎯 Tujuan: ${nama}<br>🐟 Estimasi Ikan: ~${estimasi.jumlah} ekor (${estimasi.status})`)
+                .openPopup();
 
             if (currentLat && currentLng) {
                 if (polylineGarisTujuan) map.removeLayer(polylineGarisTujuan);
@@ -346,7 +351,6 @@ function hitungEstimasiIkan(lat, lng) {
             updateNavigasiPanah();
         }
 
-        // --- TEMPEL KOORDINAT WA DAN OTOMATIS SIMPAN KE LIST SPOT ---
         function tujuKoordinatWA() {
             const text = document.getElementById('inputWaCoords').value;
             if(!text) return alert("Tempelkan teks koordinat dulu Pak!");
@@ -356,23 +360,17 @@ function hitungEstimasiIkan(lat, lng) {
                 const lat = parseFloat(match[1]);
                 const lng = parseFloat(match[2]);
 
-                // Tanya nama spot ke nelayan
                 const namaInput = prompt("Beri nama untuk titik koordinat ini:", "Spot WA " + (spotList.length + 1));
                 const namaSpot = namaInput ? namaInput : ("Spot WA " + (spotList.length + 1));
 
-                // Simpan ke array spotList dan LocalStorage
                 const spotBaru = { id: Date.now(), nama: namaSpot, lat: lat, lng: lng };
                 spotList.push(spotBaru);
                 localStorage.setItem('spotIkan', JSON.stringify(spotList));
 
-                // Perbarui tampilan daftar spot
                 tampilkanSpotTersimpan();
-
-                // Langsung aktifkan sebagai lokasi tujuan
                 tujuSpot(lat, lng, namaSpot);
                 alert(`🎯 Titik "${namaSpot}" berhasil disimpan ke daftar tempat mancing dan dijadikan tujuan!`);
 
-                // Kosongkan kolom input
                 document.getElementById('inputWaCoords').value = "";
             } else {
                 alert("Format koordinat tidak terbaca. Contoh benar: -6.12345, 106.78901");
@@ -499,13 +497,14 @@ function hitungEstimasiIkan(lat, lng) {
             }
 
             spotList.forEach((s) => {
-                let m = L.marker([s.lat, s.lng]).addTo(map).bindPopup("🐟 " + s.nama);
+                const estimasi = hitungEstimasiIkan(s.lat, s.lng);
+                let m = L.marker([s.lat, s.lng]).addTo(map).bindPopup(`🐟 ${s.nama}<br>Potensi: ${estimasi.status} (~${estimasi.jumlah} ekor)`);
                 spotMarkers.push(m);
 
                 let li = document.createElement('li');
                 li.innerHTML = `
                     <div>
-                        <b>${s.nama}</b><br>
+                        <b>${s.nama}</b> <small style="color:#27ae60;">(Potensi: ${estimasi.status})</small><br>
                         <small style="color:#666">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</small>
                     </div>
                     <div>
