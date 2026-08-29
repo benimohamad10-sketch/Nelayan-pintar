@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelayan Pintar V8.8 (Full Feature)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nelayan Pintar V8.8 (Full Combined Features)</title>
 
     <!-- Meta & PWA Config -->
     <link rel="manifest" href="./manifest.json">
@@ -18,8 +18,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
+        * { box-sizing: border-box; }
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 10px;
             background-color: #eef2f5;
@@ -27,111 +28,170 @@
         }
         .card {
             background: #fff;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
+            padding: 14px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            margin-bottom: 12px;
         }
+        h1, h2, h3 { margin-top: 0; margin-bottom: 8px; }
         #map {
             width: 100%;
-            height: 350px;
+            height: 360px;
             border-radius: 8px;
+            margin-bottom: 12px;
+            z-index: 1;
         }
         .btn {
             display: inline-block;
-            padding: 10px 15px;
+            width: 100%;
+            padding: 12px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             color: #fff;
             font-weight: bold;
+            font-size: 0.95rem;
             cursor: pointer;
-            margin-right: 5px;
-            margin-top: 5px;
+            margin-top: 6px;
+            text-align: center;
         }
         .btn-blue { background-color: #006699; }
         .btn-green { background-color: #2e7d32; }
         .btn-red { background-color: #c62828; }
         .btn-dark { background-color: #444; }
-        .info-box {
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px dashed #eee;
             font-size: 0.9rem;
-            line-height: 1.4;
+        }
+        .spot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .spot-actions { display: flex; gap: 4px; }
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            width: auto;
+            margin: 0;
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>⚓ Nelayan Pintar V8.8</h1>
-        <p>Navigasi Laut, GPS, Kompas, Spot Mancing & Peta Offline</p>
+    <!-- Header Aplikasi -->
+    <div class="card" style="background: #006699; color: white;">
+        <h1 style="margin: 0; font-size: 1.4rem;">⚓ Nelayan Pintar V8.8</h1>
+        <small>Navigasi Laut, GPS, Kompas, Spot Mancing & Peta Offline</small>
     </div>
 
-    <!-- Container Peta -->
+    <!-- Container Peta (V8.7 & V8.8) -->
     <div id="map"></div>
 
-    <!-- FITUR V8.7: Panel GPS & Kompas Navigasi -->
+    <!-- Dashboard Navigasi GPS & Kompas (V8.7) -->
     <div class="card">
-        <h2>🧭 NAVIGASI & GPS (V8.7)</h2>
-        <div class="info-box">
-            <p><strong>Posisi Anda:</strong> <span id="gpsPos">Mencari GPS...</span></p>
-            <p><strong>Arah (Heading):</strong> <span id="compassHeading">-°</span></p>
-            <p><strong>Jarak ke Spot:</strong> <span id="distToSpot">-</span></p>
+        <h2>🧭 DASHBOARD NAVIGASI (V8.7)</h2>
+        <div class="info-row">
+            <span>Posisi Perahu (GPS):</span>
+            <strong id="gpsPos">Mencari Satelit...</strong>
         </div>
-        <button class="btn btn-green" onclick="tambahSpotMancing()">📍 TAMBAH SPOT SEKARANG</button>
+        <div class="info-row">
+            <span>Arah Haluan (Compass):</span>
+            <strong id="compassHeading">-°</strong>
+        </div>
+        <div class="info-row">
+            <span>Kecepatan Laut:</span>
+            <strong id="gpsSpeed">0 Knot</strong>
+        </div>
+        <div class="info-row">
+            <span>Target Aktif:</span>
+            <strong id="targetName">Belum Dipilih</strong>
+        </div>
+        <div class="info-row">
+            <span>Jarak ke Target:</span>
+            <strong id="targetDist">-</strong>
+        </div>
+        <div class="info-row">
+            <span>Arah Menuju Target (Bearing):</span>
+            <strong id="targetBearing">-°</strong>
+        </div>
+
+        <button class="btn btn-green" onclick="tambahSpotMancing()">📍 SIMPAN SPOT SAAT INI</button>
     </div>
 
-    <!-- FITUR V8.8: Kontrol Peta Offline -->
+    <!-- Peta Offline Caching (V8.8) -->
     <div class="card">
-        <h2>🗺️ PETA OFFLINE (V8.8)</h2>
-        <div id="mapOfflineStatus" style="font-size: .8rem; margin-bottom: 8px;">🟡 Belum ada peta offline</div>
-        <button class="btn btn-blue" onclick="downloadOfflineMap()">📥 SIMPAN PETA AREA INI</button>
-        <button class="btn btn-dark" onclick="clearOfflineMap()">🗑️ HAPUS PETA OFFLINE</button>
+        <h2>🗺️ MANAJEMEN PETA OFFLINE (V8.8)</h2>
+        <div id="mapOfflineStatus" style="font-size: .85rem; margin-bottom: 8px; color: #666;">🟡 Cek status peta offline...</div>
+        <div class="grid-2">
+            <button class="btn btn-blue" onclick="downloadOfflineMap()">📥 SIMPAN AREA</button>
+            <button class="btn btn-dark" onclick="clearOfflineMap()">🗑️ HAPUS CACHE</button>
+        </div>
     </div>
 
-    <!-- FITUR V8.7: Daftar Spot Mancing Tersimpan -->
+    <!-- Kelola Titik Spot Mancing (V8.7) -->
     <div class="card">
-        <h2>📑 DAFTAR SPOT MANCING</h2>
-        <ul id="spotList" style="padding-left: 20px;"></ul>
+        <h2>📑 DAFTAR SPOT MANCING TERSIMPAN</h2>
+        <div id="spotList"></div>
     </div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // --------------------------------------------------
-        // 1. INISIALISASI PETA & VARIABLE GLOBAL
-        // --------------------------------------------------
-        const map = L.map('map').setView([-6.200000, 106.816666], 11);
+        // ==========================================
+        // 1. STATE & VARIABLE GLOBAL
+        // ==========================================
+        let map;
+        let userMarker = null;
+        let targetLine = null;
+        let currentPos = null;
+        let activeTarget = null;
+        let spotMancingList = JSON.parse(localStorage.getItem('spotMancing')) || [];
+        const OFFLINE_TILE_CACHE = "nelayan-pintar-map-v8-8";
 
+        // Inisialisasi Peta Leaflet
+        map = L.map('map').setView([-6.200000, 106.816666], 11);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        let userMarker = null;
-        let currentPos = null;
-        let spotMancingList = JSON.parse(localStorage.getItem('spotMancing')) || [];
-
-        // --------------------------------------------------
-        // 2. LOGIKA V8.7: GPS, SENSOR KOMPAS, SPOT MANCING
-        // --------------------------------------------------
+        // ==========================================
+        // 2. FITUR V8.7: GPS & NAVIGASI MATEMATIS
+        // ==========================================
         function initGPS() {
             if ("geolocation" in navigator) {
                 navigator.geolocation.watchPosition(
                     (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
+                        const speedKnot = position.coords.speed ? (position.coords.speed * 1.94384).toFixed(1) : 0;
+                        
                         currentPos = { lat, lng };
 
                         document.getElementById('gpsPos').innerText = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                        document.getElementById('gpsSpeed').innerText = `${speedKnot} Knot`;
 
                         if (!userMarker) {
-                            userMarker = L.marker([lat, lng]).addTo(map).bindPopup("Lokasi Perahu Anda");
+                            userMarker = L.marker([lat, lng]).addTo(map).bindPopup("<b>Perahu Anda</b>");
                         } else {
                             userMarker.setLatLng([lat, lng]);
                         }
+
+                        updateNavigasiTarget();
                     },
-                    (err) => console.log("Gagal akses GPS:", err),
-                    { enableHighAccuracy: true }
+                    (err) => console.log("GPS Error:", err),
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
                 );
             }
         }
@@ -139,26 +199,77 @@
         function initCompass() {
             if (window.DeviceOrientationEvent) {
                 window.addEventListener('deviceorientation', (event) => {
-                    let alpha = event.alpha;
-                    if (event.webkitCompassHeading) {
-                        alpha = event.webkitCompassHeading; // iOS
-                    }
-                    if (alpha !== null) {
-                        document.getElementById('compassHeading').innerText = `${Math.round(alpha)}°`;
+                    let heading = event.alpha;
+                    if (event.webkitCompassHeading) { heading = event.webkitCompassHeading; } // iOS Support
+                    if (heading !== null && heading !== undefined) {
+                        document.getElementById('compassHeading').innerText = `${Math.round(heading)}°`;
                     }
                 });
             }
         }
 
+        // Kalkulasi Jarak Haversine (Nautical Miles)
+        function hitungJarakNM(lat1, lon1, lat2, lon2) {
+            const R = 3440.065; // Radius Bumi dalam Nautical Miles
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Kalkulasi Arah Bearing
+        function hitungBearing(lat1, lon1, lat2, lon2) {
+            const φ1 = lat1 * Math.PI / 180, φ2 = lat2 * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+            const y = Math.sin(Δλ) * Math.cos(φ2);
+            const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+            const θ = Math.atan2(y, x);
+            return (θ * 180 / Math.PI + 360) % 360;
+        }
+
+        function setNavigasiTarget(index) {
+            activeTarget = spotMancingList[index];
+            document.getElementById('targetName').innerText = activeTarget.nama;
+            updateNavigasiTarget();
+        }
+
+        function updateNavigasiTarget() {
+            if (!currentPos || !activeTarget) return;
+
+            const distNM = hitungJarakNM(currentPos.lat, currentPos.lng, activeTarget.lat, activeTarget.lng);
+            const bearing = hitungBearing(currentPos.lat, currentPos.lng, activeTarget.lat, activeTarget.lng);
+
+            document.getElementById('targetDist').innerText = `${distNM.toFixed(2)} NM`;
+            document.getElementById('targetBearing').innerText = `${Math.round(bearing)}°`;
+
+            // Gambar Garis Navigasi di Peta
+            if (targetLine) map.removeLayer(targetLine);
+            targetLine = L.polyline([[currentPos.lat, currentPos.lng], [activeTarget.lat, activeTarget.lng]], {
+                color: 'red',
+                dashArray: '5, 10',
+                weight: 3
+            }).addTo(map);
+        }
+
         function tambahSpotMancing() {
             if (!currentPos) {
-                alert("GPS belum mendeteksi lokasi Anda!");
+                alert("GPS belum aktif/mendapatkan posisi perahu!");
                 return;
             }
-            const nama = prompt("Masukkan nama spot mancing:");
+            const nama = prompt("Nama Spot Mancing:");
             if (nama) {
-                const newSpot = { nama, lat: currentPos.lat, lng: currentPos.lng };
-                spotMancingList.push(newSpot);
+                spotMancingList.push({ nama, lat: currentPos.lat, lng: currentPos.lng });
+                localStorage.setItem('spotMancing', JSON.stringify(spotMancingList));
+                renderSpotList();
+            }
+        }
+
+        function hapusSpot(index) {
+            if (confirm("Hapus titik spot ini?")) {
+                spotMancingList.splice(index, 1);
                 localStorage.setItem('spotMancing', JSON.stringify(spotMancingList));
                 renderSpotList();
             }
@@ -167,21 +278,31 @@
         function renderSpotList() {
             const listEl = document.getElementById('spotList');
             listEl.innerHTML = '';
-            spotMancingList.forEach((spot, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `<strong>${spot.nama}</strong> (${spot.lat.toFixed(4)}, ${spot.lng.toFixed(4)})`;
-                listEl.appendChild(li);
 
-                // Tambahkan marker ke peta
-                L.marker([spot.lat, spot.lng]).addTo(map).bindPopup(spot.nama);
+            spotMancingList.forEach((spot, index) => {
+                // Marker pada Peta
+                L.marker([spot.lat, spot.lng]).addTo(map).bindPopup(`<b>${spot.nama}</b>`);
+
+                // Elemen HTML Daftar
+                const div = document.createElement('div');
+                div.className = 'spot-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${spot.nama}</strong><br>
+                        <small style="color:#666">${spot.lat.toFixed(4)}, ${spot.lng.toFixed(4)}</small>
+                    </div>
+                    <div class="spot-actions">
+                        <button class="btn btn-green btn-sm" onclick="setNavigasiTarget(${index})">Navigasi</button>
+                        <button class="btn btn-red btn-sm" onclick="hapusSpot(${index})">Hapus</button>
+                    </div>
+                `;
+                listEl.appendChild(div);
             });
         }
 
-        // --------------------------------------------------
-        // 3. LOGIKA V8.8: MANAJEMEN PETA OFFLINE
-        // --------------------------------------------------
-        const OFFLINE_TILE_CACHE = "nelayan-pintar-map-v8-8";
-
+        // ==========================================
+        // 3. FITUR V8.8: PETA OFFLINE & CACHING
+        // ==========================================
         function koordinatKeTile(lat, lon, zoom) {
             const latRad = lat * Math.PI / 180;
             const n = Math.pow(2, zoom);
@@ -191,14 +312,13 @@
         }
 
         async function downloadOfflineMap() {
-            if (!map) return;
             if (!navigator.onLine) {
-                alert("Hubungkan ke internet untuk mengunduh area peta!");
+                alert("📵 Hubungkan ke internet untuk mengunduh tile peta!");
                 return;
             }
             const zoom = map.getZoom();
             if (zoom < 10 || zoom > 15) {
-                alert("Zoom peta harus berada pada level 10 - 15 untuk menyimpan.");
+                alert("Zoom peta harus berada pada skala 10 sampai 15.");
                 return;
             }
 
@@ -213,11 +333,11 @@
 
             const total = (maxX - minX + 1) * (maxY - minY + 1);
             if (total > 500) {
-                alert("Area terlalu luas. Perkecil tampilan peta!");
+                alert("Area terlalu luas. Perkecil tampilan layar peta!");
                 return;
             }
 
-            if (!confirm(`Simpan ${total} tile peta pada zoom ${zoom}?`)) return;
+            if (!confirm(`Simpan ${total} tile peta pada Zoom ${zoom}?`)) return;
 
             const cache = await caches.open(OFFLINE_TILE_CACHE);
             let berhasil = 0;
@@ -234,19 +354,20 @@
                             berhasil++;
                         }
                     } catch (e) {
-                        console.log("Gagal tile:", url);
+                        console.log("Tile error:", url);
                     }
-                    if (status) status.innerText = `📥 Menyimpan ${berhasil} / ${total} tile...`;
+                    if (status) status.innerText = `📥 Menyimpan peta: ${berhasil} / ${total} tile...`;
                 }
             }
             if (status) status.innerText = `🟢 Peta offline siap. ${berhasil} tile tersimpan.`;
-            alert("✅ Download Peta Selesai!");
+            alert("✅ Download Peta Offline Selesai!");
         }
 
         async function clearOfflineMap() {
-            if (confirm("Hapus semua cache peta offline?")) {
+            if (confirm("Hapus semua peta offline yang tersimpan?")) {
                 await caches.delete(OFFLINE_TILE_CACHE);
                 document.getElementById("mapOfflineStatus").innerText = "🟡 Peta offline sudah dihapus.";
+                alert("🗑️ Peta offline dibersihkan.");
             }
         }
 
@@ -257,13 +378,13 @@
                 const status = document.getElementById("mapOfflineStatus");
                 if (status) {
                     status.innerText = daftar.length > 0 
-                        ? `🟢 Peta offline tersedia: ${daftar.length} tile.` 
+                        ? `🟢 Peta offline tersedia: ${daftar.length} tile tersimpan.` 
                         : "🟡 Belum ada peta offline.";
                 }
             } catch (e) {}
         }
 
-        // Jalankan Inisialisasi
+        // Run On Load
         window.addEventListener("load", () => {
             initGPS();
             initCompass();
@@ -272,13 +393,13 @@
         });
     </script>
 
-    <!-- Registrasi Service Worker PWA -->
+    <!-- Registrasi PWA Service Worker -->
     <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
                 navigator.serviceWorker.register("./service-worker.js")
-                    .then(reg => console.log("Service Worker Aktif:", reg.scope))
-                    .catch(err => console.log("Service Worker Gagal:", err));
+                    .then(reg => console.log("SW Registered:", reg.scope))
+                    .catch(err => console.log("SW Register Failed:", err));
             });
         }
     </script>
