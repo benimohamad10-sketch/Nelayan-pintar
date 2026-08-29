@@ -1,0 +1,27 @@
+{
+  "name": "Nelayan Pintar V8.8",
+  "short_name": "Nelayan Pintar",
+  "description": "Navigasi laut, GPS, kompas, spot mancing, cuaca dan pemantauan nelayan.",
+  "lang": "id-ID",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef2f5",
+  "theme_color": "#006699",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
