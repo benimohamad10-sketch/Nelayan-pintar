@@ -675,8 +675,6 @@
             updateGPS();
         };
     </script>
-
-
     <script>
         // =====================================================
         // NELAYAN PINTAR V8.8 - PETA OFFLINE
@@ -802,6 +800,7 @@
     </script>
 
     <script>
+        
         // =====================================================
         // NELAYAN PINTAR V8.8 - PWA / OFFLINE
         // =====================================================
@@ -868,7 +867,43 @@
         } else {
             updatePWAStatus();
         }
-    </script>
+        // ... fungsi-fungsi kode Anda sebelumnya di atas baris ini ...
 
+        function dengarDataFirebase() {
+            if (!window.firebaseReady || !window.db) return;
+            
+            window.dbOnValue(window.dbRef(window.db, 'posisi_nelayan'), (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+
+                document.getElementById('keluargaCoords').innerText = `${data.lat.toFixed(6)}, ${data.lng.toFixed(6)}`;
+                document.getElementById('keluargaTime').innerText = data.waktu;
+
+                const badge = document.getElementById('statusBadge');
+                if (data.sos) {
+                    badge.innerText = '🚨 DARURAT (SOS)';
+                    badge.className = 'status-badge status-sos';
+                } else {
+                    badge.innerText = 'ONLINE';
+                    badge.className = 'status-badge status-online';
+                }
+
+                const mapsUrl = `https://www.google.com/maps?q=${data.lat},${data.lng}`;
+                document.getElementById('btnWA').href = mapsUrl;
+
+                if (currentMode === 'keluarga') {
+                    boatMarker.setLatLng([data.lat, data.lng]);
+                    map.panTo([data.lat, data.lng]);
+                }
+            });
+        }
+
+        // Inisialisasi awal saat halaman selesai dimuat
+        window.addEventListener('load', () => {
+            initMap();
+            updateGPS();
+        });
+    </script>
+<script src="./app.js"></script>
 </body>
 </html>
