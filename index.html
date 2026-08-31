@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="Nelayan Pintar">
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./icon-192.png">
-    <title>Nelayan Pintar V8.8</title>
+    <title>Nelayan Pintar V8.9</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -73,6 +73,46 @@
         li { background: #f8f9fa; padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
 
         .emoji-icon { font-size: 26px; text-align: center; line-height: 30px; }
+
+        /* V8.9 - Panah navigasi di peta */
+        .route-arrow-icon {
+            background: transparent;
+            border: 0;
+        }
+        .route-arrow-shape {
+            width: 0;
+            height: 0;
+            border-left: 11px solid transparent;
+            border-right: 11px solid transparent;
+            border-bottom: 30px solid #0077b6;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,.35));
+            transform-origin: 50% 70%;
+        }
+        .nav-card {
+            background: #eef9ff;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            text-align: center;
+            border: 1px solid #cfeaf7;
+        }
+        .nav-arrow-big {
+            display: inline-block;
+            font-size: 74px;
+            line-height: 1;
+            color: #0077b6;
+            text-shadow: 0 3px 5px rgba(0,0,0,.18);
+            transform-origin: 50% 55%;
+            transition: transform .12s linear;
+            margin: 4px 0;
+        }
+        .nav-mode-label {
+            font-weight: bold;
+            color: #006699;
+            font-size: 1.05rem;
+        }
+        .nav-bearing { font-size: 1.15rem; font-weight: bold; margin-top: 3px; }
+        .nav-distance { font-size: 1.05rem; font-weight: bold; margin-top: 3px; }
     </style>
 
     <!-- Firebase SDK (v9) - online features only -->
@@ -107,7 +147,7 @@
                 window.dbSet = set;
                 window.dbOnValue = onValue;
                 window.firebaseReady = true;
-                console.log("Firebase V8.8 siap.");
+                console.log("Firebase V8.9 siap.");
             } catch (e) {
                 console.warn("Firebase tidak tersedia offline:", e);
                 window.firebaseReady = false;
@@ -121,15 +161,15 @@
 <body>
 
     <div class="app-header">
-        <h1>🚤 NELAYAN PINTAR V8.8</h1>
+        <h1>🚤 NELAYAN PINTAR V8.9</h1>
         <!-- Sesuaikan nama file gambar logo di bawah ini jika berbeda -->
         <img src="logo.png" alt="Nelayan Pintar Header">
         <p>🧭 NAVIGASI LAUT & CUACA REALTIME</p>
     </div>
 
-    <!-- V8.8 PWA / OFFLINE STATUS -->
+    <!-- V8.9 PWA / OFFLINE STATUS -->
     <div class="card" id="pwaCard" style="border-left:4px solid #006699;">
-        <h2>📱 Nelayan Pintar V8.8</h2>
+        <h2>📱 Nelayan Pintar V8.9</h2>
         <div id="offlineStatus" style="font-size:.82rem;margin-bottom:6px;">
             Memeriksa koneksi dan kesiapan offline...
         </div>
@@ -171,6 +211,7 @@
         <!-- PERKIRAAN CUACA LOKASI TUJUAN -->
         <div class="weather-target-card" id="targetWeatherBox" style="display:none;">
             <h2>🎯 PERKIRAAN CUACA DI TITIK TUJUAN</h2>
+            <div id="targetWeatherName" style="font-size:.82rem;margin-bottom:5px;">Tujuan terpilih</div>
             <div class="weather-grid">
                 <div class="weather-box">
                     <div id="targetWeatherIcon" class="weather-icon">🌤️</div>
@@ -183,6 +224,8 @@
                     <div id="targetWindSpeed" class="weather-val">-- km/h</div>
                 </div>
             </div>
+            <button class="btn btn-green" style="margin-top:10px; background:rgba(255,255,255,0.25);" onclick="refreshCuacaTujuan()">🔄 UPDATE CUACA TUJUAN</button>
+            <small style="display:block;margin-top:6px;color:rgba(255,255,255,.9);">Cuaca diperbarui saat internet tersedia. Data terakhir dapat ditampilkan kembali.</small>
         </div>
 
         <!-- KOMPAS VISUAL SENSOR HP -->
@@ -192,6 +235,16 @@
             <div id="headingVal" style="font-size: 1.2rem; font-weight: bold; color: #f1c40f;">0° U</div>
             <div id="targetNavInfo" style="font-size: 0.85rem; color: #2ecc71; margin-top: 4px; font-weight: bold;">Navigasi: Belum Memilih Tujuan</div>
             <button class="btn btn-yellow" onclick="mintaIzinKompas()" style="margin-top: 8px;">🧩 AKTIFKAN SENSOR KOMPAS HP</button>
+        </div>
+
+        <!-- V8.9 PANAH NAVIGASI -->
+        <div class="nav-card">
+            <div id="navModeLabel" class="nav-mode-label">🎯 ARAH TUJUAN</div>
+            <div id="navArrowBig" class="nav-arrow-big">▲</div>
+            <div id="navBearingText" class="nav-bearing">Arah: -</div>
+            <div id="navDistanceText" class="nav-distance">📏 Jarak: -</div>
+            <button class="btn btn-orange" onclick="setArahPulang()">↩️ ARAH PULANG KE TITIK BERANGKAT</button>
+            <small style="display:block;margin-top:6px;color:#666;">Panah biru menunjukkan arah relatif terhadap arah hadap HP.</small>
         </div>
 
         <!-- POSISI GPS NELAYAN & JARAK NAVIGASI -->
@@ -297,6 +350,8 @@
         let polylineGarisTujuan = null;
         let spotMarkers = [];
         let heading = 0;
+        let navMode = 'tujuan';
+        let routeArrowMarker = null;
         let spotList = JSON.parse(localStorage.getItem('spotIkan')) || [];
 
         const boatIcon = L.divIcon({ html: '🚤', className: 'emoji-icon', iconSize: [30, 30] });
@@ -387,7 +442,8 @@
                         polylineGarisTujuan = L.polyline([
                             [currentLat, currentLng],
                             [targetLat, targetLng]
-                        ], { color: 'red', weight: 4, dashArray: '8, 8' }).addTo(map);
+                        ], { color: '#0077b6', weight: 4, dashArray: '10, 8' }).addTo(map);
+                        updateRouteArrow(currentLat, currentLng, targetLat, targetLng);
 
                         updateNavigasiPanah();
                     }
@@ -402,9 +458,10 @@
         }
 
         function setTitikAwal() {
-            if(!currentLat) return alert("GPS belum aktif...");
+            if(currentLat === null || currentLng === null) return alert("GPS belum aktif...");
             startLat = currentLat;
             startLng = currentLng;
+            localStorage.setItem('titikBerangkat', JSON.stringify({lat:startLat, lng:startLng}));
             
             if (startMarker) map.removeLayer(startMarker);
             startMarker = L.marker([startLat, startLng], { icon: startIcon }).addTo(map).bindPopup("⚓ Titik Berangkat awal").openPopup();
@@ -414,6 +471,9 @@
         function tujuSpot(lat, lng, nama) {
             targetLat = lat;
             targetLng = lng;
+            navMode = 'tujuan';
+            const targetNameEl = document.getElementById('targetWeatherName');
+            if (targetNameEl) targetNameEl.innerText = '🎯 ' + nama;
 
             const estimasi = hitungEstimasiIkan(lat, lng);
 
@@ -428,7 +488,8 @@
                 polylineGarisTujuan = L.polyline([
                     [currentLat, currentLng],
                     [targetLat, targetLng]
-                ], { color: 'red', weight: 4, dashArray: '8, 8' }).addTo(map);
+                ], { color: '#0077b6', weight: 4, dashArray: '10, 8' }).addTo(map);
+                updateRouteArrow(currentLat, currentLng, targetLat, targetLng);
 
                 const dist = hitungJarak(currentLat, currentLng, targetLat, targetLng);
                 document.getElementById('jarakKeTujuan').innerText = dist.toFixed(2) + " km";
@@ -478,7 +539,7 @@
         }
 
         function cekCuacaLocation() {
-            if (!currentLat || !currentLng) return alert("Tunggu posisi GPS...");
+            if (currentLat === null || currentLng === null) return alert("Tunggu posisi GPS...");
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLng}&current_weather=true`;
             
             fetch(url)
@@ -498,22 +559,49 @@
         }
 
         function cekCuacaTujuan(lat, lng) {
+            const box = document.getElementById('targetWeatherBox');
+            box.style.display = 'block';
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`;
-            
+
             fetch(url)
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.json();
+                })
                 .then(data => {
                     const cw = data.current_weather;
+                    if (!cw) throw new Error('Data cuaca kosong');
                     const weatherInfo = parseWeatherCode(cw.weathercode);
                     const windKts = (cw.windspeed * 0.539957).toFixed(1);
 
-                    document.getElementById('targetWeatherBox').style.display = 'block';
                     document.getElementById('targetWeatherIcon').innerText = weatherInfo.icon;
                     document.getElementById('targetWeatherDesc').innerText = weatherInfo.desc;
-                    document.getElementById('targetWeatherTemp').innerText = cw.temperature + " °C";
+                    document.getElementById('targetWeatherTemp').innerText = cw.temperature + ' °C';
                     document.getElementById('targetWindSpeed').innerText = `${cw.windspeed} km/h (${windKts} kts)`;
+
+                    localStorage.setItem('cuacaTujuanTerakhir', JSON.stringify({
+                        lat, lng, time: Date.now(), cw, weatherInfo
+                    }));
                 })
-                .catch(err => console.log("Gagal muat cuaca tujuan: " + err.message));
+                .catch(err => {
+                    console.log('Gagal muat cuaca tujuan: ' + err.message);
+                    const saved = JSON.parse(localStorage.getItem('cuacaTujuanTerakhir') || 'null');
+                    if (saved && saved.cw && Math.abs(saved.lat-lat)<0.01 && Math.abs(saved.lng-lng)<0.01) {
+                        document.getElementById('targetWeatherIcon').innerText = saved.weatherInfo.icon;
+                        document.getElementById('targetWeatherDesc').innerText = saved.weatherInfo.desc + ' (tersimpan)';
+                        document.getElementById('targetWeatherTemp').innerText = saved.cw.temperature + ' °C';
+                        document.getElementById('targetWindSpeed').innerText = `${saved.cw.windspeed} km/h (${(saved.cw.windspeed*0.539957).toFixed(1)} kts)`;
+                    } else {
+                        document.getElementById('targetWeatherDesc').innerText = 'Cuaca tidak tersedia';
+                    }
+                });
+        }
+
+        function refreshCuacaTujuan() {
+            if (targetLat === null || targetLng === null || navMode === 'pulang') {
+                return alert('Pilih titik tujuan terlebih dahulu.');
+            }
+            cekCuacaTujuan(targetLat, targetLng);
         }
 
         function mintaIzinKompas() {
@@ -533,30 +621,110 @@
         }
 
         function handleOrientation(event) {
-            let compassHeading = event.webkitCompassHeading || (360 - event.alpha);
-            if (compassHeading) {
+            let compassHeading = (event.webkitCompassHeading !== undefined && event.webkitCompassHeading !== null) ? event.webkitCompassHeading : (event.alpha !== null && event.alpha !== undefined ? 360 - event.alpha : null);
+            if (compassHeading !== null && !Number.isNaN(compassHeading)) {
                 heading = compassHeading;
-                document.getElementById('headingVal').innerText = Math.round(heading) + "° U";
+                document.getElementById('headingVal').innerText = Math.round(heading) + '° ' + namaArah(heading);
                 updateNavigasiPanah();
             }
         }
 
         function updateNavigasiPanah() {
             const arrowEl = document.getElementById('compassArrow');
-            if (targetLat && targetLng && currentLat && currentLng) {
+            const bigArrow = document.getElementById('navArrowBig');
+            const bearingText = document.getElementById('navBearingText');
+            const distanceText = document.getElementById('navDistanceText');
+            const modeLabel = document.getElementById('navModeLabel');
+
+            if (targetLat !== null && targetLng !== null && currentLat !== null && currentLng !== null) {
                 const bearing = hitungBearing(currentLat, currentLng, targetLat, targetLng);
-                const relAngle = bearing - heading;
-                arrowEl.style.transform = `rotate(${relAngle}deg)`;
-                
+                const relAngle = normalisasiSudut(bearing - heading);
                 const d = hitungJarak(currentLat, currentLng, targetLat, targetLng);
-                document.getElementById('targetNavInfo').innerText = `Tujuan: ${d.toFixed(2)} km (${Math.round(bearing)}°)`;
+
+                arrowEl.style.transform = `rotate(${relAngle}deg)`;
+                if (bigArrow) bigArrow.style.transform = `rotate(${relAngle}deg)`;
+                if (modeLabel) modeLabel.innerText = navMode === 'pulang' ? '↩️ ARAH PULANG' : '🎯 ARAH TUJUAN';
+                if (bearingText) bearingText.innerText = `🧭 Arah: ${Math.round(bearing)}° ${namaArah(bearing)}`;
+                if (distanceText) distanceText.innerText = `📏 Jarak: ${formatJarak(d)}`;
+                document.getElementById('targetNavInfo').innerText = `${navMode === 'pulang' ? 'Pulang' : 'Tujuan'}: ${d.toFixed(2)} km (${Math.round(bearing)}° ${namaArah(bearing)})`;
             } else {
                 arrowEl.style.transform = `rotate(${-heading}deg)`;
+                if (bigArrow) bigArrow.style.transform = `rotate(${-heading}deg)`;
+                if (bearingText) bearingText.innerText = '🧭 Arah: -';
+                if (distanceText) distanceText.innerText = '📏 Jarak: -';
             }
         }
 
+        function normalisasiSudut(deg) {
+            let d = deg % 360;
+            if (d > 180) d -= 360;
+            if (d < -180) d += 360;
+            return d;
+        }
+
+        function namaArah(deg) {
+            if (deg >= 337.5 || deg < 22.5) return 'Utara';
+            if (deg < 67.5) return 'Timur Laut';
+            if (deg < 112.5) return 'Timur';
+            if (deg < 157.5) return 'Tenggara';
+            if (deg < 202.5) return 'Selatan';
+            if (deg < 247.5) return 'Barat Daya';
+            if (deg < 292.5) return 'Barat';
+            return 'Barat Laut';
+        }
+
+        function formatJarak(km) {
+            return km < 1 ? Math.round(km * 1000) + ' meter' : km.toFixed(2) + ' km';
+        }
+
+        function updateRouteArrow(lat1, lng1, lat2, lng2) {
+            if (!map) return;
+            const midLat = (lat1 + lat2) / 2;
+            const midLng = (lng1 + lng2) / 2;
+            const bearing = hitungBearing(lat1, lng1, lat2, lng2);
+            const rotation = bearing;
+
+            if (routeArrowMarker) map.removeLayer(routeArrowMarker);
+
+            const icon = L.divIcon({
+                className: 'route-arrow-icon',
+                html: `<div class="route-arrow-shape" style="transform:rotate(${rotation}deg)"></div>`,
+                iconSize: [24, 32],
+                iconAnchor: [12, 16]
+            });
+            routeArrowMarker = L.marker([midLat, midLng], {icon: icon, interactive:false}).addTo(map);
+        }
+
+        function setArahPulang() {
+            if (startLat === null || startLng === null) {
+                return alert('⚓ Titik berangkat belum disimpan. Tekan SIMPAN TITIK BERANGKAT SAYA terlebih dahulu.');
+            }
+            targetLat = startLat;
+            targetLng = startLng;
+            navMode = 'pulang';
+
+            if (targetMarker) map.removeLayer(targetMarker);
+            targetMarker = L.marker([targetLat, targetLng], {icon: startIcon})
+                .addTo(map)
+                .bindPopup('<b>↩️ Titik Berangkat / Arah Pulang</b>')
+                .openPopup();
+
+            document.getElementById('targetWeatherBox').style.display = 'none';
+
+            if (currentLat !== null && currentLng !== null) {
+                if (polylineGarisTujuan) map.removeLayer(polylineGarisTujuan);
+                polylineGarisTujuan = L.polyline([[currentLat,currentLng],[targetLat,targetLng]], {
+                    color:'#e67e22', weight:4, dashArray:'10,8'
+                }).addTo(map);
+                updateRouteArrow(currentLat,currentLng,targetLat,targetLng);
+            }
+
+            updateNavigasiPanah();
+            map.panTo([targetLat,targetLng]);
+        }
+
         function simpanSpotIkan() {
-            if(!currentLat) return alert("GPS belum aktif...");
+            if(currentLat === null || currentLng === null) return alert("GPS belum aktif...");
             const namaSpot = prompt("Nama tempat mancing:", "Spot " + (spotList.length + 1));
             if (namaSpot) {
                 const spot = { id: Date.now(), nama: namaSpot, lat: currentLat, lng: currentLng };
@@ -624,7 +792,7 @@
         }
 
         function kirimLokasiRealtime() {
-            if (!currentLat || !currentLng) return alert("GPS belum terdeteksi.");
+            if (currentLat === null || currentLng === null) return alert("GPS belum terdeteksi.");
             const data = { lat: currentLat, lng: currentLng, waktu: new Date().toLocaleTimeString('id-ID'), sos: false };
             if (window.db) {
                 window.dbSet(window.dbRef(window.db, 'posisi_nelayan'), data)
@@ -634,7 +802,7 @@
         }
 
         function kirimSOS() {
-            if (!currentLat || !currentLng) return alert("GPS belum terdeteksi.");
+            if (currentLat === null || currentLng === null) return alert("GPS belum terdeteksi.");
             const data = { lat: currentLat, lng: currentLng, waktu: new Date().toLocaleTimeString('id-ID'), sos: true };
             if (window.db) {
                 window.dbSet(window.dbRef(window.db, 'posisi_nelayan'), data)
@@ -672,14 +840,21 @@
 
         window.onload = function() {
             initMap();
+            const savedStart = JSON.parse(localStorage.getItem('titikBerangkat') || 'null');
+            if (savedStart && savedStart.lat !== undefined && savedStart.lng !== undefined) {
+                startLat = savedStart.lat;
+                startLng = savedStart.lng;
+                startMarker = L.marker([startLat, startLng], { icon: startIcon })
+                    .addTo(map).bindPopup('⚓ Titik Berangkat');
+            }
             updateGPS();
         };
     </script>
     <script>
         // =====================================================
-        // NELAYAN PINTAR V8.8 - PETA OFFLINE
+        // NELAYAN PINTAR V8.9 - PETA OFFLINE
         // =====================================================
-        const OFFLINE_TILE_CACHE = "nelayan-pintar-map-v8-8";
+        const OFFLINE_TILE_CACHE = "nelayan-pintar-map-v8-9";
 
         function tileXY(lat, lon, zoom) {
             const latRad = lat * Math.PI / 180;
@@ -799,111 +974,6 @@
         window.addEventListener("load", offlineMapStatus);
     </script>
 
-    <script>
-        
-        // =====================================================
-        // NELAYAN PINTAR V8.8 - PWA / OFFLINE
-        // =====================================================
-        let deferredInstallPrompt = null;
 
-        function updatePWAStatus() {
-            const el = document.getElementById("offlineStatus");
-            if (!el) return;
-
-            if (navigator.onLine) {
-                el.innerHTML = "🟢 <b>ONLINE</b> — cuaca & Firebase dapat digunakan. File aplikasi juga disimpan untuk offline.";
-            } else {
-                el.innerHTML = "🔵 <b>OFFLINE</b> — GPS, kompas, spot tersimpan, jarak & bearing tetap dapat digunakan. Cuaca/Firebase membutuhkan internet.";
-            }
-        }
-
-        window.addEventListener("online", updatePWAStatus);
-        window.addEventListener("offline", updatePWAStatus);
-
-        window.addEventListener("beforeinstallprompt", (event) => {
-            event.preventDefault();
-            deferredInstallPrompt = event;
-
-            const btn = document.getElementById("installBtn");
-            if (btn) btn.style.display = "block";
-        });
-
-        document.addEventListener("click", async (event) => {
-            if (event.target && event.target.id === "installBtn") {
-                if (!deferredInstallPrompt) return;
-
-                deferredInstallPrompt.prompt();
-                await deferredInstallPrompt.userChoice;
-                deferredInstallPrompt = null;
-
-                const btn = document.getElementById("installBtn");
-                if (btn) btn.style.display = "none";
-            }
-        });
-
-        window.addEventListener("appinstalled", () => {
-            const btn = document.getElementById("installBtn");
-            if (btn) btn.style.display = "none";
-
-            const el = document.getElementById("offlineStatus");
-            if (el) el.innerHTML = "✅ <b>NELAYAN PINTAR</b> sudah terpasang sebagai aplikasi.";
-        });
-
-        if ("serviceWorker" in navigator) {
-            window.addEventListener("load", async () => {
-                try {
-                    const registration = await navigator.serviceWorker.register(
-                        "./service-worker.js",
-                        { scope: "./" }
-                    );
-
-                    console.log("Nelayan Pintar V8.8 Service Worker aktif:", registration.scope);
-                } catch (error) {
-                    console.error("Service Worker gagal:", error);
-                }
-
-                updatePWAStatus();
-            });
-        } else {
-            updatePWAStatus();
-        }
-        // ... fungsi-fungsi kode Anda sebelumnya di atas baris ini ...
-
-        function dengarDataFirebase() {
-            if (!window.firebaseReady || !window.db) return;
-            
-            window.dbOnValue(window.dbRef(window.db, 'posisi_nelayan'), (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
-
-                document.getElementById('keluargaCoords').innerText = `${data.lat.toFixed(6)}, ${data.lng.toFixed(6)}`;
-                document.getElementById('keluargaTime').innerText = data.waktu;
-
-                const badge = document.getElementById('statusBadge');
-                if (data.sos) {
-                    badge.innerText = '🚨 DARURAT (SOS)';
-                    badge.className = 'status-badge status-sos';
-                } else {
-                    badge.innerText = 'ONLINE';
-                    badge.className = 'status-badge status-online';
-                }
-
-                const mapsUrl = `https://www.google.com/maps?q=${data.lat},${data.lng}`;
-                document.getElementById('btnWA').href = mapsUrl;
-
-                if (currentMode === 'keluarga') {
-                    boatMarker.setLatLng([data.lat, data.lng]);
-                    map.panTo([data.lat, data.lng]);
-                }
-            });
-        }
-
-        // Inisialisasi awal saat halaman selesai dimuat
-        window.addEventListener('load', () => {
-            initMap();
-            updateGPS();
-        });
-    </script>
-<script src="./app.js"></script>
 </body>
 </html>
